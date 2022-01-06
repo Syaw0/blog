@@ -85,3 +85,5 @@ if (isString(foo)) {
 ```
 
 I personally like invariant-style better, how about you?
+
+> watch my Youtube video for this post: https://www.youtube.com/watch?v=BGk79_GfT7U
