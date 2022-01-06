@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "Invariant style assertion functions in TypeScript"
-date: 2022-01-07 01:21:16 +0900
+title: "Invariant-style assertion functions in TypeScript"
+date: 2022-01-06 01:21:16 +0900
 categories: TypeScript
 ---
 
@@ -31,7 +31,7 @@ function handleInput(input: string | null) {
 }
 ```
 
-If we are to do it in variant style
+If we are to do it in variant style, it'll be like this.
 
 ```ts
 function handleInput(input: string | null) {
@@ -41,11 +41,11 @@ function handleInput(input: string | null) {
 }
 ```
 
-But TypeScript doesn't infer that input is not null here. `validaInput` is still `string | null`.
+But TypeScript doesn't infer that input is not null here,`validaInput` is still `string | null`.
 
 ## Assertion Function comes as rescue.
 
-Actually it is added a long time ago in [TypeScript 3.7](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html), we can use assertion function here to tell TypeScript that if invariant doesn't throw an error, then the input is not null.
+Actually it was added a long time ago in [TypeScript 3.7](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html), we can use assertion function here to tell TypeScript that if invariant doesn't throw an error, then the input is not null.
 
 We need `invariant()` to be a generic function to suit more cases.
 
@@ -62,7 +62,7 @@ function invariant<T>(
 
 Now if we [try the code](https://www.typescriptlang.org/play?ssl=5&ssc=2&pln=1&pc=1#code/GYVwdgxgLglg9mABDMA3AhgJxusUA8AKgHwAUAJulOgFyKEA0iAtgKYDO76A5q3e1GxhuASjrpOrTFHaJK1ZLIByCJSAA269ACN1rIsUQBvALAAoRMmCJSAQnnoRx85ctQAFpjgB3RGFa+AKKYXpikbJw8rCIuiAC+5glm5qCQsAiI7rjkegCSYAAOIFCkKEVQ-IIo3IgAPn4a6k6mFshoWDh4pYXFTABEZcWI7O5wGuR+cFCI2qwNmn0iANyxAPSrbeWKw1XCk96xEAgCiBjqMJT5WwC8m8WJQA), `validaInput` has the right type of `string`.
 
-Or we can asserts data to be specific type.
+Or we can assert data to be some specific type.
 
 ```ts
 function assertsString(data: any): asserts data is string {
@@ -72,11 +72,15 @@ function assertsString(data: any): asserts data is string {
 }
 ```
 
-Which is basically the same as type guard, but without the usage of if clause.
+Which is basically the same as type guard, but without the usage of `if clause`.
 
 ```ts
 function isString(data: any): data is string {
   return typeof data === "string";
+}
+
+if (isString(foo)) {
+  // foo is string
 }
 ```
 
