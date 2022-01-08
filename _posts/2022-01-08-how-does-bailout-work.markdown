@@ -196,7 +196,7 @@ in `checkScheduledUpdateOrContext()` , `bailoutOnAlreadyFinishedWork()` is calle
 So things are clear now.
 
 1. basically React goes to every fider, from root to all the fibers
-2. but if some fibers has not props changes, not context change, and both `lanes` and `childLanes` as 0, it bails out
+2. but if some fibers has no props changes, no context change, and both `lanes` and `childLanes` as 0, it bails out
 
 Go back to our dev console, you can understand why A B E F are not rerendered.
 
