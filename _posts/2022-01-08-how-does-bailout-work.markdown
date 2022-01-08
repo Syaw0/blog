@@ -200,6 +200,12 @@ So things are clear now.
 
 Go back to our dev console, you can understand why A B E F are not rerendered.
 
+A and B: try to bailout in `updateFunctionComponent()` ([source](https://github.com/facebook/react/blob/f2a59df48bec2352a4dd3b5415282a4ea240a4f8/packages/react-reconciler/src/ReactFiberBeginWork.old.js#L1041)) since no update found, so no rerender. But their children C has work to do, so continue to C
+
+E: bailout at `beginWork()`
+
+F: since bailout at E, F is not checked at all.
+
 ## Wait, why D is rerenderd?
 
 Good question.
