@@ -40,8 +40,6 @@ Now click the button, as we talked before in our video series, `setState` actual
 
 ![](/static/bailout-3.png)
 
-For A and B , they are in the path for C from root, so understandable, but how does React bailout at E?
-
 ## lanes & childlanes
 
 Clear the filter in dev console, you should be able to see the logs I've already put there, you can click them to see the source code.
