@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "How does React bailout works in reconciliation - React Source Code Walkthrough 13"
+title: "How does React bailout work in reconciliation - React Source Code Walkthrough 13"
 date: 2022-01-07 01:21:16 +0900
 categories: React
 ---
