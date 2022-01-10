@@ -83,7 +83,7 @@ In each iteration of step 5, depth is set to new and shallower depth, so even if
 Reasonable! Who would do that in reality? Yes, me! Below is a modified example.
 
 ```diff
-const resizeObserver = new ResizeObserver(entries => {
+const resizeObserver = new ResizeObserver(function (entries){
 + divElem.style.width = (parseInt(divElem.style.width) + 2) + 'px';
 + h1Elem.style.color = randomColor();
   for (let entry of entries) {
@@ -103,24 +103,27 @@ const resizeObserver = new ResizeObserver(entries => {
     }
   }
   console.log('Size changed');
-});
+ });
+
+
++ const h1resizeObserver = new ResizeObserver((entries) => {
++ h1Elem.style.color = 'black';
++ });
++ h1resizeObserver.observe(h1Elem);
 
 resizeObserver.observe(divElem);
 
-+const h1resizeObserver = new ResizeObserver((entries) => {
-+h1Elem.style.color = 'black'
-+})
-
-+h1resizeObserver.observe(h1Elem)
 ```
 
 We change container size and color of h1 to random color in the callback.
 
 Since h1's font size is changed as well, its resize event triggers our newly added observer in which color is set to black.
 
-If infinite loop is not handled, we would expect the fullscreen container instantly, but open the [demo link](/demos/resizeobserver/index.html) and try it yourself.
+If infinite loop is not handled, we would expect the fullscreen container to pop up instantly.
 
-1. because of infinite loop is guarded, even though we changed the size of container, it is processed in next round, so we see a smooth animation of enlarging.
+But please open the [demo link](/demos/resizeobserver/index.html) and try it yourself.
+
+1. because of infinite loop is guarded, even though we changed the size of container, it is processed in next round, so actually we see a smooth animation of enlarging.
 2. because resize event of children in the callback is processed, we see the color of h1 always be black until the last frame where h1 doesn't have size change so color is set to random.
 
 That's it, hope this blog helps you understand ResizeObserver better, especially the internals.
