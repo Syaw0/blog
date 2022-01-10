@@ -318,4 +318,4 @@ Go to our [second demo link](/demos/react/how-bailout-works/index2.html), again 
 
 Why? Simple.
 
-Because when `C()` is executed, `children` is passed in as a parameter, which means in `createWorkInProgress()`, `pendingProps` is exactly the same, thus bailout happens.
+Because when `C()` is executed, `children` is passed in as an argument, which means in `createWorkInProgress()`, `pendingProps` is exactly the same, thus bailout happens.
