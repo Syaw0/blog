@@ -254,6 +254,8 @@ Yeah, in short, **SimpleMemoComponent is an internal optimization for function c
 
 It looks similar to [View Flattening in React-native](https://reactnative.dev/docs/view-flattening).
 
+And the original pr for this optimization could be found here [https://github.com/facebook/react/pull/13903](https://github.com/facebook/react/pull/13903).
+
 ## checkScheduledUpdateOrContext() is always called
 
 Notice that though in `updateMemoComponent()` and `updateSimpleMemoComponent()`, the props are compared but `checkScheduledUpdateOrContext()` is always run, because the wrapped component could have being scheduled update by other functions, like some events or context.
