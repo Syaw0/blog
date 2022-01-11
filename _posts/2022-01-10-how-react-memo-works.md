@@ -5,6 +5,8 @@ date: 2022-01-10 01:21:16 +0900
 categories: React
 ---
 
+> You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=0jbV6apamhs) for this post
+
 In [How does React bailout work in reconciliation]({% post_url 2022-01-08-how-does-bailout-work %}), we managed to understand how React stops reconciling when it finds there is nothing changed in the subtree.
 
 Wait, sounds just like what `React.memo()` does, right?
@@ -230,7 +232,7 @@ function updateSimpleMemoComponent(
 1. it just shallow compares the props and try to bailout
 2. it doesn't create new fiber, which means there is no `D()` in the fiber tree.
 
-We can see the fiber tree from console. (watch my video here to see how)
+We can see the fiber tree from console. (watch [my video here](https://youtu.be/0jbV6apamhs?t=758) to see how)
 
 ![](/static/memo-2.png)
 
