@@ -5,7 +5,7 @@ date: 2022-01-07 01:21:16 +0900
 categories: React
 ---
 
-This is a blog post for my video [https://www.youtube.com/watch?v=LfwMlGjiaW0](https://www.youtube.com/watch?v=LfwMlGjiaW0)
+> You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=LfwMlGjiaW0) for this post
 
 ## Demo
 

@@ -1,9 +1,11 @@
 ---
 layout: post
-title: "How does useImperativeHandle() work? - React source code walkthrough"
+title: "How does useImperativeHandle() work? - React source code walkthrough 12"
 date: 2021-12-25 01:21:16 +0900
 categories: React
 ---
+
+> You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=iuKpQAhunac) for this post
 
 Have you used [useImperativeHandle()](https://reactjs.org/docs/hooks-reference.html#useimperativehandle) before ? Let's figure out how it works intenrally.
 
