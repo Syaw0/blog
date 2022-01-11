@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Invariant-style assertion functions in TypeScript"
-date: 2022-01-06 01:21:16 +0900
+date: 2022-01-06 18:21:10 +0900
 categories: TypeScript
 ---
 

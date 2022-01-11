@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "How does React.memo() work? - React source code walkthrough 14"
-date: 2022-01-10 01:21:16 +0900
+date: 2022-01-11 18:21:10 +0900
 categories: React
 ---
 

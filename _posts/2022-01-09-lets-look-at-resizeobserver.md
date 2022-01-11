@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Let's take a look at ResizeObserver"
-date: 2022-01-09 01:21:16 +0900
+date: 2022-01-09 18:21:10 +0900
 categories: WebAPI
 ---
 
