@@ -5,7 +5,7 @@ date: 2022-01-16 18:21:10 +0900
 categories: React
 ---
 
-> You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=0jbV6apamhs) for this post
+> You can watch my [Youtube video explanation](https://youtu.be/3nwupG2Joaw) for this post
 
 ## Fiber Tree Structure
 
