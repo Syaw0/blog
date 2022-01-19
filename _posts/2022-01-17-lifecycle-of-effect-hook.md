@@ -5,7 +5,7 @@ date: 2022-01-19 18:21:10 +0900
 categories: React
 ---
 
-> You can watch my [Youtube video explanation](https://youtu.be/3nwupG2Joaw) for this post
+> You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=-0-pCZvvwaM) for this post
 
 I've talked about how `useEffect()` works in [this video](https://www.youtube.com/watch?v=Ggmdo7TORNc), but the content was a bit messy. Also the React version I used was not the latest, things have changed sinc then so let me explain the lifecycle of Effect hooks again.
 
@@ -164,13 +164,13 @@ commitPassiveMountEffects(root, root.current);
 
 An effect's cleanup must be run first before it is run again, so `unmount` happens first before `mount`.
 
-These 2 functions checks effects on all fibers from root, the algorithm is what we [covered in previous post]({% post_url 2022-01-17-lifecycle-of-effect-hook %})
+These 2 functions checks effects on all fibers from root, the algorithm is what we [covered in previous post]({% post_url 2022-01-16-fiber-traversal-in-react %})
 
 You might think that wouldn't it be inefficient to traverse through tree over and over again ? You are right, that is why React has this optimization of avoiding unnecessary checks with `finishedWork.subtreeFlags` `finishedWork.flags`, .etc.
 
 ## commitPassiveUnmountEffects()
 
-As our algorithm in [last post]({% post_url 2022-01-17-lifecycle-of-effect-hook %}) explained, `commitPassiveUnmountEffects()` includes a `begin()` and `complete()`.
+As our algorithm in [last post]({% post_url 2022-01-16-fiber-traversal-in-react %}) explained, `commitPassiveUnmountEffects()` includes a `begin()` and `complete()`.
 
 ```js
 function commitPassiveUnmountEffects_begin() {
@@ -307,7 +307,7 @@ So when does `destroy` gets set ? I bet you already know it, when we `pushEffect
 
 ## commitPassiveMountEffects()
 
-The [tree traversal algorithm]({% post_url 2022-01-17-lifecycle-of-effect-hook %}) is the same, we'll skip it.
+The [tree traversal algorithm]({% post_url 2022-01-16-fiber-traversal-in-react %}) is the same, we'll skip it.
 
 Similarly, it triggers `commitHookEffectListMount(HookPassive | HookHasEffect, finishedWork)`.
 
