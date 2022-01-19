@@ -27,6 +27,18 @@ layout: default
         crossorigin="anonymous"
         async>
 </script>
+<script>
+const headings = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id]');
+const linkContent = '#';
+for (const heading of headings) {
+    const linkIcon = document.createElement('a');
+    linkIcon.setAttribute('href', `#${heading.id}`);
+    linkIcon.style.fontSize = '0.8em'
+    linkIcon.style.padding = '0 0.5em';
+    linkIcon.innerHTML = linkContent;
+    heading.appendChild(linkIcon);
+}
+</script>
 
   <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
 </article>
