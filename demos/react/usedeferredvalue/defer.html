@@ -1,0 +1,250 @@
+<html>
+  <body>
+    <script src="../lib/react.development.js"></script>
+    <script src="../lib/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <div id="container"></div>
+    
+    <script type="text/babel">
+      function fetchProfileData(userId) {
+        let userPromise = fetchUser(userId);
+        let postsPromise = fetchPosts(userId);
+        return {
+          userId,
+          user: wrapPromise(userPromise),
+          posts: wrapPromise(postsPromise)
+        };
+      }
+
+      // Suspense integrations like Relay implement
+      // a contract like this to integrate with React.
+      // Real implementations can be significantly more complex.
+      // Don't copy-paste this into your project!
+      function wrapPromise(promise) {
+        let status = "pending";
+        let result;
+        let suspender = promise.then(
+          r => {
+            status = "success";
+            result = r;
+          },
+          e => {
+            status = "error";
+            result = e;
+          }
+        );
+        return {
+          read() {
+            if (status === "pending") {
+              throw suspender;
+            } else if (status === "error") {
+              throw result;
+            } else if (status === "success") {
+              return result;
+            }
+          }
+        };
+      }
+
+      function fetchUser(userId) {
+        console.log("fetch user " + userId + "...");
+        return new Promise(resolve => {
+          setTimeout(() => {
+            console.log("fetched user " + userId);
+            switch (userId) {
+              case 0:
+                resolve({
+                  name: "Ringo Starr"
+                });
+                break;
+              case 1:
+                resolve({
+                  name: "George Harrison"
+                });
+                break;
+              case 2:
+                resolve({
+                  name: "John Lennon"
+                });
+                break;
+              case 3:
+                resolve({
+                  name: "Paul McCartney"
+                });
+                break;
+              default:
+                throw Error("Unknown user.");
+            }
+          }, 300);
+        });
+      }
+
+      function fetchPosts(userId) {
+        console.log(
+          "fetch posts for " + userId + "..."
+        );
+        return new Promise(resolve => {
+          setTimeout(() => {
+            console.log("fetched posts for " + userId);
+            switch (userId) {
+              case 0:
+                resolve([
+                  {
+                    id: 0,
+                    text:
+                      "I get by with a little help from my friends"
+                  },
+                  {
+                    id: 1,
+                    text:
+                      "I'd like to be under the sea in an octupus's garden"
+                  },
+                  {
+                    id: 2,
+                    text:
+                      "You got that sand all over your feet"
+                  }
+                ]);
+                break;
+              case 1:
+                resolve([
+                  {
+                    id: 0,
+                    text:
+                      "Turn off your mind, relax, and float downstream"
+                  },
+                  {
+                    id: 1,
+                    text: "All things must pass"
+                  },
+                  {
+                    id: 2,
+                    text:
+                      "I look at the world and I notice it's turning"
+                  }
+                ]);
+                break;
+              case 2:
+                resolve([
+                  {
+                    id: 0,
+                    text:
+                      "Living is easy with eyes closed"
+                  },
+                  {
+                    id: 1,
+                    text:
+                      "Nothing's gonna change my world"
+                  },
+                  {
+                    id: 2,
+                    text: "I am the walrus"
+                  }
+                ]);
+                break;
+              case 3:
+                resolve([
+                  {
+                    id: 0,
+                    text: "Woke up, fell out of bed"
+                  },
+                  {
+                    id: 1,
+                    text: "Here, there, and everywhere"
+                  },
+                  {
+                    id: 2,
+                    text:
+                      "Two of us sending postcards, writing letters"
+                  }
+                ]);
+                break;
+              default:
+                throw Error("Unknown user.");
+            }
+          }, 1000);
+        });
+      }
+
+      function getNextId(id) {
+        return id === 3 ? 0 : id + 1;
+      }
+
+      const initialResource = fetchProfileData(0);
+
+      function App() {
+        const [resource, setResource] = React.useState(
+          initialResource
+        );
+        const [
+          isPending,
+          startTransition,
+        ] = React.useTransition({
+          timeoutMs: 3000
+        });
+        return (
+          <React.Fragment>
+            <button
+              disabled={!!isPending}
+              onClick={() => {
+                startTransition(() => {
+                  const nextUserId = getNextId(
+                    resource.userId
+                  );
+                  setResource(
+                    fetchProfileData(nextUserId)
+                  );
+                });
+              }}
+            >
+              Next
+            </button>
+            {isPending ? " Loading..." : null}
+            <ProfilePage resource={resource} />
+          </React.Fragment>
+        );
+      }
+
+      function ProfilePage({ resource }) {
+        const deferredResource = React.useDeferredValue(resource)
+        return (
+          <React.Suspense
+            fallback={<h1>Loading profile...</h1>}
+          >
+            <ProfileDetails resource={resource} />
+            <React.Suspense
+              fallback={<h1>Loading posts...</h1>}
+            >
+              <ProfileTimeline resource={deferredResource}/>
+            </React.Suspense>
+          </React.Suspense>
+        );
+      }
+
+      function ProfileDetails({ resource }) {
+        const user = resource.user.read();
+        return <h1>{user.name}</h1>;
+      }
+
+      function ProfileTimeline({ resource,isStale }) {
+        const posts = resource.posts.read();
+        return (
+          <ul style={{ opacity: isStale ? 0.7 : 1 }}>
+            {posts.map(post => (
+              <li key={post.id}>{post.text}</li>
+            ))}
+          </ul>
+        );
+      }
+
+
+      const rootElement = document.getElementById(
+              "container"
+            );
+
+      ReactDOM.createRoot(rootElement).render(
+       <App />
+      )
+    </script>
+  </body>
+</html>;
