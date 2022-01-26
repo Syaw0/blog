@@ -5,7 +5,7 @@ date: 2022-01-26 18:21:10 +0900
 categories: React
 ---
 
-> You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=-0-pCZvvwaM) for this post
+> You can watch my [Youtube video explanation](https://youtu.be/db31-3xw_3U) for this post
 
 In React concurrent mode, besides `useTransition()` and `Suspense`, there is one more API called `useDeferredValue()`, let's see what it is and how it works.
 
