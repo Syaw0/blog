@@ -3,6 +3,7 @@ layout: post
 title: "Let's take a look at ResizeObserver"
 date: 2022-01-09 18:21:10 +0900
 categories: WebAPI
+image: /static/logo.png
 ---
 
 This is a blog post for my video [https://www.youtube.com/watch?v=XEHR-AVou4U](https://www.youtube.com/watch?v=XEHR-AVou4U)

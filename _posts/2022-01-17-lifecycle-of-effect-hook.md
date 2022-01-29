@@ -3,6 +3,7 @@ layout: post
 title: "The lifecycle of effect hooks in React - React source code walkthrough 16"
 date: 2022-01-19 18:21:10 +0900
 categories: React
+image: /static/logo.png
 ---
 
 > You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=-0-pCZvvwaM) for this post

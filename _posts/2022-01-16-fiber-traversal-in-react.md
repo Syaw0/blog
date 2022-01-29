@@ -3,6 +3,7 @@ layout: post
 title: "How does React traverse Fiber tree internally? - React source code walkthrough 15"
 date: 2022-01-16 18:21:10 +0900
 categories: React
+image: /static/logo.png
 ---
 
 > You can watch my [Youtube video explanation](https://youtu.be/3nwupG2Joaw) for this post

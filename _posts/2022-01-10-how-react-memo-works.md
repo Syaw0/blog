@@ -3,6 +3,7 @@ layout: post
 title: "How does React.memo() work? - React source code walkthrough 14"
 date: 2022-01-11 18:21:10 +0900
 categories: React
+image: /static/logo.png
 ---
 
 > You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=0jbV6apamhs) for this post

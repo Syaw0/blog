@@ -3,6 +3,7 @@ layout: post
 title: "How does React.useDeferredValue() work? - React source code walkthrough 17"
 date: 2022-01-26 18:21:10 +0900
 categories: React
+image: /static/logo.png
 ---
 
 > You can watch my [Youtube video explanation](https://youtu.be/db31-3xw_3U) for this post

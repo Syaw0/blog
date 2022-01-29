@@ -3,6 +3,7 @@ layout: post
 title: "Invariant-style assertion functions in TypeScript"
 date: 2022-01-06 18:21:10 +0900
 categories: TypeScript
+image: /static/logo.png
 ---
 
 There is this [invariant()](https://github.com/facebook/react/blob/v0.13.3/src/vendor/core/invariant.js) in React source code that I found pretty useful.

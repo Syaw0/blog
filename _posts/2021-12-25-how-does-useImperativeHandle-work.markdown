@@ -3,6 +3,7 @@ layout: post
 title: "How does useImperativeHandle() work? - React source code walkthrough 12"
 date: 2021-12-25 18:21:10 +0900
 categories: React
+image: /static/logo.png
 ---
 
 > You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=iuKpQAhunac) for this post

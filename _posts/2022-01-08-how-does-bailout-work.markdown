@@ -3,6 +3,7 @@ layout: post
 title: "How does React bailout work in reconciliation - React Source Code Walkthrough 13"
 date: 2022-01-07 18:21:10 +0900
 categories: React
+image: /static/logo.png
 ---
 
 > You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=LfwMlGjiaW0) for this post
