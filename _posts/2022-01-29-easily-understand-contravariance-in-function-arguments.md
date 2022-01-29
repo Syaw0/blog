@@ -6,6 +6,8 @@ categories: TypeScript
 image: /static/logo.png
 ---
 
+> Watch [my video on youtube](https://youtu.be/7YHnsH3KCJE) for this post.
+
 Take a look at this code snippet
 
 ```ts
