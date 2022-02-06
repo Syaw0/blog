@@ -1,0 +1,34 @@
+<html>
+  <body>
+    <script src="../lib/react.development.js"></script>
+    <script src="../lib/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <div id="container"></div>
+    <style>
+      .component {
+        border: 1px solid #ccc;
+        padding: 10px;
+        display: flex;
+        margin: 10px;
+        align-items: flex-start;
+      }
+      .component::before {
+        content: attr(data-name)
+      }
+    </style>
+    <script type="text/babel">
+      const arr = [1,2,3,4,5,6]
+
+      function A() {
+        return arr.map(item => <p>{item}</p>)
+      }
+      const rootElement = document.getElementById(
+              "container"
+            );
+
+      ReactDOM.createRoot(rootElement).render(
+       <A />
+      )
+    </script>
+  </body>
+</html>;
