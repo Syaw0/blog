@@ -179,4 +179,4 @@ function updateSlot(
 
 That's it. We now know how empty values are handled in React - **the are simply ignored**.
 
-One slight problem is that actually they affects the reconciling algorithm in `reconcileChildrenArray()`, which I'll write a post about soon, stay tuned.
+One slight problem is that actually they affect the reconciling algorithm in `reconcileChildrenArray()`, which I'll write a post about soon, stay tuned.
