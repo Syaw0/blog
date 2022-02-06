@@ -1,355 +1,182 @@
 ---
 layout: post
-title: "How does 'key' work? Array diffing in React - React Source Code Walkthrough 19"
+title: "How does React handle empty values(null/undfined/Booleans) internally?  - React Source Code Walkthrough 18"
 date: 2022-02-04 18:21:10 +0900
 categories: React
 image: /static/logo.png
 ---
 
-> Watch [my video on youtube](https://youtu.be/7YHnsH3KCJE) for this post.
+We all know that [Booleans, Null, and Undefined Are Ignored](https://reactjs.org/docs/jsx-in-depth.html#booleans-null-and-undefined-are-ignored), examples like below render all same thing.
 
-When we render a list without adding `key` for each item, we woulld get a warning.
+```jsx
+<div />
 
-![](/static/array-diffing-1.png)
+<div></div>
 
-The reason for this is explained pretty nicely [on the homepage](https://reactjs.org/docs/reconciliation.html#recursing-on-children), but the explanation is conceptual, let's get hands dirty by looking at how extactly `key` works internally.
+<div>{false}</div>
 
-# reconcileChildrenArray()
+<div>{null}</div>
 
-We are already a bit familiar with the code base now, it should not be hard to target the reconcile function for array - `reconcileChildrenArray()` ([source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactChildFiber.old.js#L750))
+<div>{undefined}</div>
 
-> if not, you can search on my blog for past entries, or watch my [youtube video series](https://www.youtube.com/watch?v=OcB3rTln-fI&list=PLvx8w9g4qv_p-OS-XdbB3Ux_6DMXhAJC3)
-
-The function body is a bit intimidating, first starting with a long paragraph of comments.
-
-```js
-// This algorithm can't optimize by searching from both ends since we
-// don't have backpointers on fibers. I'm trying to see how far we can get
-// with that model. If it ends up not being worth the tradeoffs, we can
-// add it later.
-
-// Even with a two ended optimization, we'd want to optimize for the case
-// where there are few changes and brute force the comparison instead of
-// going for the Map. It'd like to explore hitting that path first in
-// forward-only mode and only go for the Map once we notice that we need
-// lots of look ahead. This doesn't handle reversal as well as two ended
-// search but that's unusual. Besides, for the two ended optimization to
-// work on Iterables, we'd need to copy the whole set.
-
-// In this first iteration, we'll just live with hitting the bad case
-// (adding everything to a Map) in for every insert/move.
+<div>{true}</div>
 ```
 
-It looks like React is comprimizing here, NOT doing `two ended optimization` because `we don't have backpointers on fibers`.
+But how exactly are these values being handled internally by React? Let's find it out.
 
-In the [previous entries]({% post_url 2022-01-08-how-does-bailout-work %}), we've already seen for children, React holds a linked list of fibers by 'sibling' rather than array.
+These values are not components, so they only exist as children of some components, so let's have a try at [reconcileChildren()](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberBeginWork.old.js#L277).
 
-What is `two ended optimization`? I guess it would be some algorithm which scans from end rather than start. This leads to our first problem.
+> This post is part of the series of me learning as well, if you find some baffled parts, I guess you can first look at my past posts or videos.
 
-# What kind of changes could happen for a list ?
+> Like above I just jump to that function because I already know it, which is hard to explain why.
 
-Suppose we have an array.
+In [reconcileChildren()](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberBeginWork.old.js#L277), `mountChildFibers()` is used for first render, and `reconcileChildFibers()` is for latter renders.
+
+But actually these 2 functions are the same with one difference of whether to track side effects or not.
+
+([source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactChildFiber.old.js#L1366-L1367))
 
 ```js
-const arrPrev = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+export const reconcileChildFibers = ChildReconciler(true);
+export const mountChildFibers = ChildReconciler(false);
 ```
 
-After some actions, it becomes a new array. If we find some element at index `i` is different, there might have many possibilities of modifications.
+From [ChildReconciler()](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactChildFiber.old.js#L267), we can see that **side effects** means "deletion".
 
-1. a new element is inserted at index `i`
-2. a new element is replacing the old element at index `i`
-3. an existing element is moved from other index to `i`
-4. an existing element is moved from other index and replaced the old element at index `i`.
-5. old element `i` is removed, the next element takes the position.
-6. ...
-
-We can see it is hard to figure out which is the case without extra analysis.
-
-Suppose we have a new array.
+`ChildReconciler()` consists a few closure functions under above flag, exporting the true [reconcileChildFibers()](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactChildFiber.old.js#L1260).
 
 ```js
-const arrNext = [11, 12, 9, 4, 7, 16, 1, 2, 3];
-```
-
-How should we transform with minimum cost?
-
-If we care about the minimum moves, it is similar to [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance), but after finding the minium moves, we still need to to the transformation.
-
-`Total Cost = Cost of analysing(reconcile) + Cost of transforming (commit changes)`
-
-Take an extream example, what if we reversed the array ?
-
-```js
-const arrPrev = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-```
-
-Since each position is different, the analysing part is going to cost a lot of time to find the optimal moves, which might be better we just replace all of them.
-
-Obviously we can take the dummiest approach - treat all different positions as replace with new items.
-
-This helps understand why there is `two ended optimization`, think about case like below
-
-```js
-const arrPrev = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const arrNext = [11, 12, 7, 8, 9, 10];
-```
-
-It is hard to infer from head, but if we reverse it
-
-```js
-const arrPrev = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-const arrNext = [10, 9, 8, 7, 6, 12, 11];
-```
-
-It looks much clear now. I guess this is the `two-way optimization`.
-
-## React's approach
-
-In order to understand the code below better, let me explain the algorithm first.
-
-Construct new fiber list by following step
-
-1. try optimisitically reconcile the items with same key
-
-   - both starts at index: 0, (headOld, headNew)
-   - compare the old fiber and new element
-     - if Key is the same, then reconcile the item
-     - if not, break
-
-2. for the rest
-   - see if we can reuse the old fibers by `key`
-     - if can, reconcile the item
-     - if not, create new
-   - delete the unused fibers
-
-Let's go back to React source code. It starts with a for loop comparing old fibers and new elements.
-
-```js
-for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
-  if (oldFiber.index > newIdx) {
-    nextOldFiber = oldFiber;
-    oldFiber = null;
-  } else {
-    nextOldFiber = oldFiber.sibling;
-  }
-  const newFiber = updateSlot(
-    returnFiber,
-    oldFiber,
-    newChildren[newIdx],
-    lanes
-  );
-  if (newFiber === null) {
-    // TODO: This breaks on empty slots like null children. That's
-    // unfortunate because it triggers the slow path all the time. We need
-    // a better way to communicate whether this was a miss or null,
-    // boolean, undefined, etc.
-    if (oldFiber === null) {
-      oldFiber = nextOldFiber;
+function reconcileChildFibers(
+  returnFiber: Fiber,
+  currentFirstChild: Fiber | null,
+  newChild: any,
+  lanes: Lanes
+): Fiber | null {
+  if (typeof newChild === "object" && newChild !== null) {
+    switch (newChild.$$typeof) {
+      case REACT_ELEMENT_TYPE:
+        return placeSingleChild(
+          reconcileSingleElement(
+            returnFiber,
+            currentFirstChild,
+            newChild,
+            lanes
+          )
+        );
+      case REACT_PORTAL_TYPE:
+        return placeSingleChild(
+          reconcileSinglePortal(returnFiber, currentFirstChild, newChild, lanes)
+        );
+      case REACT_LAZY_TYPE:
+        if (enableLazyElements) {
+          const payload = newChild._payload;
+          const init = newChild._init;
+          // TODO: This function is supposed to be non-recursive.
+          return reconcileChildFibers(
+            returnFiber,
+            currentFirstChild,
+            init(payload),
+            lanes
+          );
+        }
     }
-    break;
-  }
-  if (shouldTrackSideEffects) {
-    if (oldFiber && newFiber.alternate === null) {
-      // We matched the slot, but we didn't reuse the existing fiber, so we
-      // need to delete the existing child.
-      deleteChild(returnFiber, oldFiber);
+    if (isArray(newChild)) {
+      return reconcileChildrenArray(
+        returnFiber,
+        currentFirstChild,
+        newChild,
+        lanes
+      );
     }
+
+    if (getIteratorFn(newChild)) {
+      return reconcileChildrenIterator(
+        returnFiber,
+        currentFirstChild,
+        newChild,
+        lanes
+      );
+    }
+
+    throwOnInvalidObjectType(returnFiber, newChild);
   }
-  lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
-  if (previousNewFiber === null) {
-    // TODO: Move out of the loop. This only happens for the first run.
-    resultingFirstChild = newFiber;
-  } else {
-    // TODO: Defer siblings if we're not at the right index for this slot.
-    // I.e. if we had null values before, then we want to defer this
-    // for each null value. However, we also don't want to call updateSlot
-    // with the previous one.
-    previousNewFiber.sibling = newFiber;
+
+  if (
+    (typeof newChild === "string" && newChild !== "") ||
+    typeof newChild === "number"
+  ) {
+    return placeSingleChild(
+      reconcileSingleTextNode(
+        returnFiber,
+        currentFirstChild,
+        "" + newChild,
+        lanes
+      )
+    );
   }
-  previousNewFiber = newFiber;
-  oldFiber = nextOldFiber;
+
+  // Remaining cases are all treated as empty.
+  return deleteRemainingChildren(returnFiber, currentFirstChild);
 }
 ```
 
-Oh man, what the heck is going on. Let's go step by step
+It has 4 steps
+
+1. handle single element type based on `$$typeof`.
+2. handle array or iterators
+3. non-empty string and numbers
+4. the rest are treated as empty, leading to deletion of previous fiber if any.
+
+So we can see that **null, undefined and booleans are simply ignored** when creating fiber.
+
+What about the case when it is in an array, let's look at [reconcileChildrenArray()](https://github.com/facebook/react/blob/848e802d203e531daf2b9b0edb281a1eb6c5415d/packages/react-reconciler/src/ReactChildFiber.old.js#L750).
+
+`reconcileChildrenArray()` has some algorithm I'd like to cover later.
+
+Looking at the code, we see 2 places where new fibers might be created.
 
 ```js
-// this loops throught the new elements
-// by keeping track of oldFiber, looks similar to two-pointer algorithm
-// recall the problem where you are asked to merge two sorted array.
-for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
-  // because children fibers are linked by `sibling`
-  // `index` is to reveal its position in the array
-  // here it says:
-  // ideally both pointers move ahead, meaning all elements are possibly the same
-  // but if new index is lagging behind ?
-  // then there is no old fiber to compare.
-  // older fibers who is after the newIndex are kept.
-  // TODO: take a look at this example
-  // WHY this happens?
-  if (oldFiber.index > newIdx) {
-    nextOldFiber = oldFiber;
-    oldFiber = null;
-  } else {
-    nextOldFiber = oldFiber.sibling;
-  }
+const newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIdx], lanes);
 
-  // we now able to reconcile specific fiber to new element
-  // it could be recreated, or reused from oldFiber.alternative
-  // this is where `key` comes in to play, we'll cover it later
-  const newFiber = updateSlot(
-    returnFiber,
-    oldFiber,
-    newChildren[newIdx],
-    lanes
-  );
-
-  // if newFiber is null, meaning we faild to do reconcilation
-  // meaning what?
-  if (newFiber === null) {
-    // WHY this?
-    if (oldFiber === null) {
-      oldFiber = nextOldFiber;
-    }
-    break;
-  }
-
-  if (shouldTrackSideEffects) {
-    // why this line means deletion ?
-    if (oldFiber && newFiber.alternate === null) {
-      // We matched the slot, but we didn't reuse the existing fiber, so we
-      // need to delete the existing child.
-      deleteChild(returnFiber, oldFiber);
-    }
-  }
-
-  // We've successfully reconciled a new fiber
-  // we need to mark the fiber to tell React that
-  // put its DOM node to thew new index.
-  lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
-
-  // we need to chain the fibers up right?
-  // so previousNewFiber allows us to do so.
-  if (previousNewFiber === null) {
-    // TODO: Move out of the loop. This only happens for the first run.
-    resultingFirstChild = newFiber;
-  } else {
-    // TODO: Defer siblings if we're not at the right index for this slot.
-    // I.e. if we had null values before, then we want to defer this
-    // for each null value. However, we also don't want to call updateSlot
-    // with the previous one.
-    previousNewFiber.sibling = newFiber;
-  }
-  previousNewFiber = newFiber;
-  oldFiber = nextOldFiber;
-}
+const newFiber = updateFromMap(
+  existingChildren,
+  returnFiber,
+  newIdx,
+  newChildren[newIdx],
+  lanes
+);
 ```
 
-A bit clearer now right ? The key point to understand this piece of code are
+In `reconcileChildrenArray()`, a new linked fiber list is constructed by looping through the array items.
 
-1. why comparing `oldFiber.index > newIdx`
-2. when `newFiber` will be null.
+If newFiber is null, it is simply ignored and not put on the fiber tree.
 
-Anyway let's continue, following part looks straightforward.
+In [updateSlog()](https://github.com/facebook/react/blob/848e802d203e531daf2b9b0edb281a1eb6c5415d/packages/react-reconciler/src/ReactChildFiber.old.js#L564) and [updateFromMap()](https://github.com/facebook/react/blob/848e802d203e531daf2b9b0edb281a1eb6c5415d/packages/react-reconciler/src/ReactChildFiber.old.js#L564), we find the similar pattern in which empty values are simply ignored and `null` is returned.
 
 ```js
-if (newIdx === newChildren.length) {
-  // We've reached the end of the new children. We can delete the rest.
-  deleteRemainingChildren(returnFiber, oldFiber);
-  if (getIsHydrating()) {
-    const numberOfForks = newIdx;
-    pushTreeFork(returnFiber, numberOfForks);
+function updateSlot(
+  returnFiber: Fiber,
+  oldFiber: Fiber | null,
+  newChild: any,
+  lanes: Lanes,
+): Fiber | null {
+  if (
+    (typeof newChild === 'string' && newChild !== '') ||
+    typeof newChild === 'number'
+  ) {
+    ...
   }
 
-  // yeah, per name it returns the first child
-  // because reconcileChildren is run for its parent
-  // it the first child is needed to set workInProgress.child = reconcileChildFibers()
-  // https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberBeginWork.old.js#L301
-  return resultingFirstChild;
+  if (typeof newChild === 'object' && newChild !== null) {
+    ...
+  }
+
+  return null;
 }
+
+
 ```
 
-Continue
+That's it. We now know how empty values are handled in React - **the are simply ignored**.
 
-```js
-// remember when oldFiber is null ? yes when olderFiber.index > newIndex
-if (oldFiber === null) {
-  // If we don't have any more existing children we can choose a fast path
-  // since the rest will all be insertions.
-  // WHY?
-  for (; newIdx < newChildren.length; newIdx++) {
-    const newFiber = createChild(returnFiber, newChildren[newIdx], lanes);
-    if (newFiber === null) {
-      continue;
-    }
-    lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
-    if (previousNewFiber === null) {
-      // TODO: Move out of the loop. This only happens for the first run.
-      resultingFirstChild = newFiber;
-    } else {
-      previousNewFiber.sibling = newFiber;
-    }
-    previousNewFiber = newFiber;
-  }
-  if (getIsHydrating()) {
-    const numberOfForks = newIdx;
-    pushTreeFork(returnFiber, numberOfForks);
-  }
-  return resultingFirstChild;
-}
-```
-
-Last piece of puzzle
-
-```js
-// Add all children to a key map for quick lookups.
-// OK kind of change it back to array?
-const existingChildren = mapRemainingChildren(returnFiber, oldFiber);
-
-// Keep scanning and use the map to restore deleted items as moves.
-for (; newIdx < newChildren.length; newIdx++) {
-  // it will handle the move?
-  const newFiber = updateFromMap(
-    existingChildren,
-    returnFiber,
-    newIdx,
-    newChildren[newIdx],
-    lanes
-  );
-  if (newFiber !== null) {
-    // what is going on here?
-    if (shouldTrackSideEffects) {
-      if (newFiber.alternate !== null) {
-        // The new fiber is a work in progress, but if there exists a
-        // current, that means that we reused the fiber. We need to delete
-        // it from the child list so that we don't add it to the deletion
-        // list.
-        existingChildren.delete(newFiber.key === null ? newIdx : newFiber.key);
-      }
-    }
-    // again, place child
-    lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
-    if (previousNewFiber === null) {
-      resultingFirstChild = newFiber;
-    } else {
-      previousNewFiber.sibling = newFiber;
-    }
-    previousNewFiber = newFiber;
-  }
-}
-
-// reasonable.
-if (shouldTrackSideEffects) {
-  // Any existing children that weren't consumed above were deleted. We need
-  // to add them to the deletion list.
-  existingChildren.forEach((child) => deleteChild(returnFiber, child));
-}
-
-if (getIsHydrating()) {
-  const numberOfForks = newIdx;
-  pushTreeFork(returnFiber, numberOfForks);
-}
-return resultingFirstChild;
-```
-
-# Still feeling dizzy about it ? let's try some example with illustrations.
+One slight problem is that actually they affects the reconciling algorithm in `reconcileChildrenArray()`, which I'll write a post about soon, stay tuned.
