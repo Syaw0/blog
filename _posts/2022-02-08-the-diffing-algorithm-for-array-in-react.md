@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "How does 'key' work? Array diffing in React - React Source Code Walkthrough 19"
+title: "How does 'key' work? List diffing in React - React Source Code Walkthrough 19"
 date: 2022-02-08 18:21:10 +0900
 categories: React
 image: /static/logo.png
