@@ -382,7 +382,7 @@ I've draw an illustration for this, suppose we have order changes like below
 
 ![](/static/diff-algo-1.png)
 
-6 actualy could be kept unmoved, because the after 2, 5, 4, 3, is moved, 6 will be automatically sibiling to 1.
+6 actualy could be kept unmoved, because the after 2, 5, 4, 3, are moved, 6 will be automatically placed as sibiling to 1.
 
 ![](/static/diff-algo-2.png)
 
