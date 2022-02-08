@@ -375,16 +375,27 @@ It is a bit hard to understand the code here. We keep in mind that
 
 1. for `insertion`, the fibers are newly created, `Placement` means the DOM node will be collected.
 2. if it is `move`, Also it must be moved backward or forward
-   - if `forward`, we don't need to do anthing, because fibers before it would push it to the right position
-   - if `backward`, we need to do real move `Placement` will move them because `appendChild()` does it natively.
+   - if `backward`, we don't need to do anthing, because fibers before it would go away, leaving it to the right position.
+   - if `forward`, we need to do real move. `Placement` will move them because `appendChild()` does it natively.
 
 I've draw an illustration for this, suppose we have order changes like below
 
 ![](/static/diff-algo-1.png)
 
-We actually only need to move 6, 5 and 4, in the order of new list.
+6 actualy could be kept unmoved, because the after 2, 5, 4, 3, is moved, 6 will be automatically sibiling to 1.
 
 ![](/static/diff-algo-2.png)
+
+You might wonder why not do the oppsite, like inserting 6 before 2. Remember we are creating a linked list, we cannot know a fiber's sibling while processing the fiber. That's why for 6 above, we only set 2 as its sibling when processing 2.
+
+For above case, `lastPlacedIndex` is
+
+1. first set to 0, but find position not change, so no need to move. return 0
+2. comparing 6, moving backward, no need to move. return 5
+3. comparing 2, old index is 1 , smaller than 5, moving forward
+4. comparing 5, old index is 4 , smaller than 5, moving forward
+5. comparing 4, old index is 3 , smaller than 5, moving forward
+6. comparing 3, old index is 2 , smaller than 5, moving forward
 
 BTW, the code behind `Placement` is in the commit phase. ([source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberCommitWork.old.js#L1555))
 
