@@ -151,7 +151,7 @@ In `reconcileChildrenArray()`, a new linked fiber list is constructed by looping
 
 If newFiber is null, it is simply ignored and not put on the fiber tree.
 
-In [updateSlog()](https://github.com/facebook/react/blob/848e802d203e531daf2b9b0edb281a1eb6c5415d/packages/react-reconciler/src/ReactChildFiber.old.js#L564) and [updateFromMap()](https://github.com/facebook/react/blob/848e802d203e531daf2b9b0edb281a1eb6c5415d/packages/react-reconciler/src/ReactChildFiber.old.js#L564), we find the similar pattern in which empty values are simply ignored and `null` is returned.
+In [updateSlot()](https://github.com/facebook/react/blob/848e802d203e531daf2b9b0edb281a1eb6c5415d/packages/react-reconciler/src/ReactChildFiber.old.js#L564) and [updateFromMap()](https://github.com/facebook/react/blob/848e802d203e531daf2b9b0edb281a1eb6c5415d/packages/react-reconciler/src/ReactChildFiber.old.js#L564), we find the similar pattern in which empty values are simply ignored and `null` is returned.
 
 ```js
 function updateSlot(
