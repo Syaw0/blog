@@ -3,7 +3,7 @@ layout: post
 title: "How does React handle empty values(null/undfined/Booleans) internally?  - React Source Code Walkthrough 18"
 date: 2022-02-04 18:21:10 +0900
 categories: React
-image: /static/logo.png
+image: /static/empty-values.jpeg
 ---
 
 We all know that [Booleans, Null, and Undefined Are Ignored](https://reactjs.org/docs/jsx-in-depth.html#booleans-null-and-undefined-are-ignored), examples like below render all same thing.
