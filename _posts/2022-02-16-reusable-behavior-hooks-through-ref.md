@@ -1,12 +1,12 @@
 ---
 layout: post
-title: "Reusable behavior hooks through Ref"
+title: "React advanced patterns - Reusable behavior hooks through Ref"
 date: 2022-02-18 18:21:10 +0900
 categories: React
 image: /static/logo.png
 ---
 
-> This is a blog post for my youtube video https://www.youtube.com/watch?v=XWj6qbX244Y
+> This is a blog post for my youtube video [https://www.youtube.com/watch?v=XWj6qbX244Y](https://www.youtube.com/watch?v=XWj6qbX244Y)
 
 ## Let's enable passive scroll listener in React
 
@@ -66,7 +66,7 @@ We can see the problem here, the options will bloat.
 
 Notice the jsx in the previous component we created.
 
-```js
+```jsx
 <div ref={refScroll}>{children}</div>
 ```
 
