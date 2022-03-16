@@ -66,7 +66,7 @@ The `loop` is very self explanatory, because there is actually sort of loop ther
 
 ### 2.2 setImmediate() to schedule a new task without blocking the rendering
 
-To schedule some task without blocking rendering(the step 3 above), we're already familiar with the trick of `setTimeout(0)`, it schedules a new macrotask.
+To schedule some task without blocking rendering(the step 3 above), we're already familiar with the trick of `setTimeout(callback, 0)`, it schedules a new macrotask.
 
 But there is event better API [setImmediate()](https://developer.mozilla.org/en-US/docs/Web/API/Window/setImmediate) but it is only available in IE and node.js.
 
@@ -112,7 +112,7 @@ Here we can see the 2 different fallbacks of `setImmediate()`, with MessageChann
 
 ### 2.3 Priority Queue
 
-[Priority Queque](https://en.wikipedia.org/wiki/Priority_queue) is a common data structure for scheduling. I suggest you try to be able to [create a priority queque in JavaScript by yourself](https://bigfrontend.dev/problem/create-a-priority-queue-in-JavaScript)
+[Priority Queue](https://en.wikipedia.org/wiki/Priority_queue) is a common data structure for scheduling. I suggest you try to be able to [create a priority queue in JavaScript by yourself](https://bigfrontend.dev/problem/create-a-priority-queue-in-JavaScript)
 
 It perfectly suits the needs in React. Since events of different kinds of priorities come in, we need to quickly find one with the highest priority to process.
 
