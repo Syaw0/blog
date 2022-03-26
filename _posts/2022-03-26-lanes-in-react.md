@@ -708,6 +708,6 @@ pendingLanes 0000000000000000000000000000000
 pendingLanes 0000000000000000000000000000000
 ```
 
-First we processed SyncLane, so `1 * 10 = 10`, then process the rest lane, notice SyncLane hook update still needs to be run for the consistency, so `(1 + 1) * 20 = 20`.
+First we processed SyncLane, so `1 * 10 = 10`, then process the rest lane, notice SyncLane hook update still needs to be run for the consistency, so `(1 + 1) * 10 = 20`.
 
 That's it for this episode, hope it helps you understand better of React internals.
