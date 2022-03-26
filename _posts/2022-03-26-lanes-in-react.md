@@ -608,7 +608,7 @@ function App() {
           setText(e.target.value);
         }}
       />
-    <Cells text={deferrredText} />
+      <Cells text={deferrredText} />
     </div>
 }
 ```
@@ -658,13 +658,14 @@ function App() {
   const renders = React.useRef([]);
   renders.current.push(state);
   return (
+    <div>
       <button
         onClick={() => {
           setCurrentUpdatePriority(4);
-          setState(num => num + 1);
+          setState((num) => num + 1);
 
           setCurrentUpdatePriority(1);
-          setState(num => num * 10);
+          setState((num) => num * 10);
         }}
       >
         click me
