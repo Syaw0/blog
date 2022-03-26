@@ -3,7 +3,7 @@ layout: post
 title: "How does useRef() work? - React source code walkthrough 11"
 date: 2021-12-05 18:21:10 +0900
 categories: React
-image: /static/logo.png
+image: /static/12-use-ref.jpeg
 ---
 
 > You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=q-B5XalyNpI) for this post
