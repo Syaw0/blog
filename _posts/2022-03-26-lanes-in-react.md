@@ -653,18 +653,18 @@ My [3rd demo](/demos/react/lanes-priority/with-schedule-api.html) is also easy t
 
 ```jsx
 function App() {
-  const [state, setState] = React.useState("initial render");
+  const [num, setNum] = React.useState(1);
   const renders = React.useRef([]);
-  renders.current.push(state);
+  renders.current.push(num);
   return (
     <div>
       <button
         onClick={() => {
           setCurrentUpdatePriority(4);
-          setState((num) => num + 1);
+          setNum((num) => num + 1);
 
           setCurrentUpdatePriority(1);
-          setState((num) => num * 10);
+          setNum((num) => num * 10);
         }}
       >
         click me
