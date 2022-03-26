@@ -6,13 +6,15 @@ categories: React
 image: /static/react-scheduler.png
 ---
 
-Previously we've seen how React schedules tasks by their priorities.
+Previously we've seen how React schedules tasks by their priorities, a sample task would be `performConcurrentWorkOnRoot()`, which targets the fiber tree as whole, not the level of work on a single fiber.
 
-How it is translated into the small "work" in reconciler?
+The concurrent mode is cool because React is able to work on different work on each fiber by their priorities, this low level priority is implement with the concept of "Lane".
 
-## `ensureRootIsScheduled()` again
+This might sounds jargon, don't worry, we'll dive into it and there are some examples at the end.
 
-This is one of the entries where scheduling method is called, there is some logic as below
+## Three priority systems
+
+Take a look at `ensureRootIsScheduled()` again, this is one of the entries where scheduling method is called.
 
 ```js
 // We use the highest priority lane to represent the priority of the callback.
@@ -47,16 +49,41 @@ if (newCallbackPriority === SyncLane) {
 
 ```
 
-Interesting. So `Lanes` are different for schedulerPriority. In previous post we've already known that there are 5 scheduler priorities, looking at above switch , we can see there are more `Lane` priority than scheduler priority.
+Interesting, from above code we can see that the scheduler priority is derived by
 
-## What is "Lanes" ?
+1. get the highest lane priority - `getHighestPriorityLane()`
+2. if not SyncLane, map lanes to Event Priority, then map to Scheduler Priority.
+
+Thus we have 3 priority systems
+
+1. Scheduler priority - used to prioritize tasks in scheduler
+2. Event priority - to mark priority of user event
+3. Lane priority - to mark priority of work
+
+Since they are for different purposes, they are separated but have logic of mapping like above, we'll cover event system in future episodes, so we don't touch much details here.
+
+## What is "Lane" ?
+
+In my youtube video about [setState](https://www.youtube.com/watch?v=svaUEHMuv9w), we've covered that a fiber holds a linked list of hooks, and for state hook, it has a update queue which would be run during update(rerender).
+
+Here is the code where an update is created([source]9
+https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.old.js#L2175-L2183))
 
 ```js
-const nextLanes = getNextLanes(
-  root,
-  root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes
-);
+const lane = requestUpdateLane(fiber);
+
+const update: Update<S, A> = {
+  lane,
+  action,
+  hasEagerState: false,
+  eagerState: null,
+  next: (null: any),
+};
 ```
+
+Yep, notice there is field called `lane`?. **`Lane` is to mark the priority of the update, which we can also say mark the priority of a piece of work**.
+
+Here are all the lanes in React, just some numbers which is easier to understand in binary forms.
 
 ```js
 // Lane values below should be kept in sync with getLabelForLane(), used by react-devtools-timeline.
@@ -113,9 +140,7 @@ export const IdleLane: Lanes = /*                       */ 0b0100000000000000000
 export const OffscreenLane: Lane = /*                   */ 0b1000000000000000000000000000000;
 ```
 
-Just like lanes on the road, the rule is to drive on different lanes based on your speed, meaning it is more urgent
-
-The smaller the lane is, the higher priority it is . so `SyncLane` is `1` here.
+Just like lanes on the road, the rule is to drive on different lanes based on your speed, meaning the smaller the lane is the more urgent the work is, the higher priority it is. so `SyncLane` is `1` here.
 
 There are many lanes here. We don't dive into each of them but rather understand how it works generally in this episode.
 
@@ -147,41 +172,37 @@ export function intersectLanes(a: Lanes | Lane, b: Lanes | Lane): Lanes {
 }
 ```
 
-## Lanes for each fiber node
+### remember `childLanes` ?
 
-For the fiber tree, each node has its lanes, and it is accumulated along the path.
+In [How does React bailout work in reconciliation]({% post_url 2022-01-08-how-does-bailout-work %}), we've also touched a bit of `lanes` and `childLanes` of a fiber.
 
-meaning each fiber has all the lane information about its descendent.
+So, each fiber knows
 
-We've touched part of this logic in the bailout [TODO]
+1. priorities for the work of itself - `lanes`
+2. priorities for the work of its descendant - `childLanes`.
 
-# So the flow is like this
+## Look at performConcurrentWorkOnRoot() again
+
+So, here is basically the flow of how a work is scheduled and run
 
 1. get the nextLanes of the fiber tree
 2. map it to scheduler priority
-3. schedule the task to reconcile in scheduler
-4. reconciliation happens, might be interrupted, might resume
+3. schedule the task to reconcile
+4. reconciliation happens, process the work from root
 
-So the magic lies in actually reconciliation, how the lanes are handled.
-
-# performConcurrentWorkOnRoot() again
-
-Let's see how lanes are used in performConcurrentWorkOnRoot().
+I guess the magic lies in actually reconciliation, that is where lane info is used.
 
 ```js
 let lanes = getNextLanes(
   root,
   root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes
 );
-```
 
-It passes down the lanes to `renderRootConcurrent()`, there is one place lanes is sued.
-
-```js
+...
 prepareFreshStack(root, lanes);
 ```
 
-in prepareFreshStack()
+`prepareFreshStack()` means restart the recociliation, remember there is a cursor(`workInProgress`) to track the current fiber, usually React would pause and resume from previous position, but in case of error or some weird cases, we need to give up current jobs done and redo them from beginining, this is what `fresh` means.
 
 ```js
 function prepareFreshStack(root: FiberRoot, lanes: Lanes) {
@@ -221,7 +242,7 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes) {
 }
 ```
 
-It looks like a reset for some global variables, ther are 4 of them about lanes
+We can see in `prepareFreshStack()`, just some variables are reset. There are quite a few of them about lanes.
 
 1. workInProgressRootRenderLanes
 2. subtreeRenderLanes
@@ -231,20 +252,16 @@ It looks like a reset for some global variables, ther are 4 of them about lanes
 6. workInProgressRootRenderPhaseUpdatedLanes
 7. workInProgressRootPingedLanes
 
-Ok, I have totally no clues what these are for. Let's keep in mind that there are a bunch of tracking of lanes.
-
-To proceed, we first pick `workInProgressRootRenderLanes` to see where they are used.
-
-# workInProgressRootRenderLanes
+Ok, no clues what they are for now, but `workInProgressRootRenderLanes` looks simple to dive into.
 
 ```js
 // The lanes we're rendering
 let workInProgressRootRenderLanes: Lanes = NoLanes;
 ```
 
-As the comment says itself, this is the lanes we're rendering. Lanes and Lane are both just numebers.
+As the comment says itself, this is the lanes we're rendering.
 
-There are a few places it is used, let's focus on the most important one
+There are a few places it is used, for example here:
 
 ```js
 export function requestUpdateLane(fiber: Fiber): Lane {
@@ -292,258 +309,392 @@ export function requestUpdateLane(fiber: Fiber): Lane {
 ``;
 ```
 
-# take one lane
+Aha, notice it is `requestUpdateLane()`? which is mentioned at the beginning. It is a bit hard to understand what is going on in above function, but it is clear that current rendering lanes somewhat affect the lanes scheduled while rendering.
 
-To understand how the lanes work, it is easier to focus on one of the lanes.
-
-# InputContinuousLane
-
-Lane means the priority for Work on fiber tree, then there must be some places the lanes are set.
-
-Starting from the events.
+OK, let's go back to `performConcurrentWorkOnRoot()`.
 
 ```js
-export const ContinuousEventPriority: EventPriority = InputContinuousLane;
+// Determine the next lanes to work on, using the fields stored
+// on the root.
+let lanes = getNextLanes(
+  root,
+  root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes
+);
 ```
 
-InputContinuousLane is mapped to `ContinuousEventPriority`.
+This decides what lanes would be worked on, `getNextLanes()` is pretty complex, we'll skip here, just keep in mind that for the very basic cases `getNextLanes()` picks up the the lane of highest priority.
 
 ```js
-export function createEventListenerWrapperWithPriority(
-  targetContainer: EventTarget,
-  domEventName: DOMEventName,
-  eventSystemFlags: EventSystemFlags
-): Function {
-  const eventPriority = getEventPriority(domEventName);
-  let listenerWrapper;
-  switch (eventPriority) {
-    case DiscreteEventPriority:
-      listenerWrapper = dispatchDiscreteEvent;
-      break;
-    case ContinuousEventPriority:
-      listenerWrapper = dispatchContinuousEvent;
-      break;
-    case DefaultEventPriority:
-    default:
-      listenerWrapper = dispatchEvent;
-      break;
+if (lanes === NoLanes) {
+  // Defensive coding. This is never expected to happen.
+  return null;
+}
+
+// We disable time-slicing in some cases: if the work has been CPU-bound
+// for too long ("expired" work, to prevent starvation), or we're in
+// sync-updates-by-default mode.
+// TODO: We only check `didTimeout` defensively, to account for a Scheduler
+// bug we're still investigating. Once the bug in Scheduler is fixed,
+// we can remove this, since we track expiration ourselves.
+const shouldTimeSlice =
+  !includesBlockingLane(root, lanes) &&
+  !includesExpiredLane(root, lanes) &&
+  (disableSchedulerTimeoutInWorkLoop || !didTimeout);
+let exitStatus = shouldTimeSlice
+  ? renderRootConcurrent(root, lanes)
+  : renderRootSync(root, lanes);
+```
+
+Interesting, we can see that even in concurrent mode, it might fall back to sync mode in some cases, for example, if the lanes includes blocking lanes or some lanes are expired.
+
+Let's skip the details of the detailed function and move on.
+
+## updateReducer()
+
+As we have covered before, `useState()` is mapped to `mountState()` for initial render and `updateState()` in the updates.
+
+The state updates happens in `updateState()`.
+
+```js
+function updateState<S>(
+  initialState: (() => S) | S
+): [S, Dispatch<BasicStateAction<S>>] {
+  return updateReducer(basicStateReducer, (initialState: any));
+}
+```
+
+Internally `updateReducer()` is used. ([source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.old.js#L754))
+
+```js
+function updateReducer<S, I, A>(
+  reducer: (S, A) => S,
+  initialArg: I,
+  init?: (I) => S
+): [S, Dispatch<A>] {
+  const hook = updateWorkInProgressHook();
+  const queue = hook.queue;
+
+  if (queue === null) {
+    throw new Error(
+      "Should have a queue. This is likely a bug in React. Please file an issue."
+    );
   }
-  return listenerWrapper.bind(
-    null,
-    domEventName,
-    eventSystemFlags,
-    targetContainer
+
+  queue.lastRenderedReducer = reducer;
+
+  const current: Hook = (currentHook: any);
+
+  // The last rebase update that is NOT part of the base state.
+  let baseQueue = current.baseQueue;
+
+  // The last pending update that hasn't been processed yet.
+  const pendingQueue = queue.pending;
+  if (pendingQueue !== null) {
+    // We have new updates that haven't been processed yet.
+    // We'll add them to the base queue.
+    if (baseQueue !== null) {
+      // Merge the pending queue and the base queue.
+      const baseFirst = baseQueue.next;
+      const pendingFirst = pendingQueue.next;
+      baseQueue.next = pendingFirst;
+      pendingQueue.next = baseFirst;
+    }
+    current.baseQueue = baseQueue = pendingQueue;
+    queue.pending = null;
+  }
+
+  if (baseQueue !== null) {
+    // We have a queue to process.
+    const first = baseQueue.next;
+    let newState = current.baseState;
+
+    let newBaseState = null;
+    let newBaseQueueFirst = null;
+    let newBaseQueueLast = null;
+    let update = first;
+    do {
+      const updateLane = update.lane;
+      if (!isSubsetOfLanes(renderLanes, updateLane)) {
+        // Priority is insufficient. Skip this update. If this is the first
+        // skipped update, the previous update/state is the new base
+        // update/state.
+        const clone: Update<S, A> = {
+          lane: updateLane,
+          action: update.action,
+          hasEagerState: update.hasEagerState,
+          eagerState: update.eagerState,
+          next: (null: any),
+        };
+        if (newBaseQueueLast === null) {
+          newBaseQueueFirst = newBaseQueueLast = clone;
+          newBaseState = newState;
+        } else {
+          newBaseQueueLast = newBaseQueueLast.next = clone;
+        }
+        // Update the remaining priority in the queue.
+        // TODO: Don't need to accumulate this. Instead, we can remove
+        // renderLanes from the original lanes.
+        currentlyRenderingFiber.lanes = mergeLanes(
+          currentlyRenderingFiber.lanes,
+          updateLane
+        );
+        markSkippedUpdateLanes(updateLane);
+      } else {
+        // This update does have sufficient priority.
+
+        if (newBaseQueueLast !== null) {
+          const clone: Update<S, A> = {
+            // This update is going to be committed so we never want uncommit
+            // it. Using NoLane works because 0 is a subset of all bitmasks, so
+            // this will never be skipped by the check above.
+            lane: NoLane,
+            action: update.action,
+            hasEagerState: update.hasEagerState,
+            eagerState: update.eagerState,
+            next: (null: any),
+          };
+          newBaseQueueLast = newBaseQueueLast.next = clone;
+        }
+
+        // Process this update.
+        if (update.hasEagerState) {
+          // If this update is a state update (not a reducer) and was processed eagerly,
+          // we can use the eagerly computed state
+          newState = ((update.eagerState: any): S);
+        } else {
+          const action = update.action;
+          newState = reducer(newState, action);
+        }
+      }
+      update = update.next;
+    } while (update !== null && update !== first);
+
+    if (newBaseQueueLast === null) {
+      newBaseState = newState;
+    } else {
+      newBaseQueueLast.next = (newBaseQueueFirst: any);
+    }
+
+    // Mark that the fiber performed work, but only if the new state is
+    // different from the current state.
+    if (!is(newState, hook.memoizedState)) {
+      markWorkInProgressReceivedUpdate();
+    }
+
+    hook.memoizedState = newState;
+    hook.baseState = newBaseState;
+    hook.baseQueue = newBaseQueueLast;
+
+    queue.lastRenderedState = newState;
+  }
+
+  return [hook.memoizedState, dispatch];
+}
+```
+
+A big one, but let's just focus on the core part
+
+```js
+do {
+  const updateLane = update.lane;
+  if (!isSubsetOfLanes(renderLanes, updateLane)) {
+    // Priority is insufficient. Skip this update. If this is the first
+    // skipped update, the previous update/state is the new base
+    // update/state.
+    ...
+  }
+  update = update.next;
+} while (update !== null && update !== first);
+```
+
+Yeah, it loop through the updates and checks the lanes by `isSubsetOfLanes`, `renderLanes` is set in `renderWithHooks()`. [source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.old.js#L376), tracing back, the root function call is in `performUnitOfWork()`.
+
+```
+next = beginWork(current, unitOfWork, subtreeRenderLanes);
+```
+
+Phew, end of talk. This is a lot so far, we've seen how the lanes work generally.
+
+## Summary
+
+1. when events happens on fibers, updates are created with Lane info, which is determined by a few factors.
+2. ancester fibers are marked with childLanes, so for any fiber, we can get the lane info for desendant nodes.
+3. get the highest priority lanes from root -> map it to scheduler priority -> schedule a task in scheduler to reconcile the fiber tree
+4. in reconciliation, pick the highest priority lanes to work on - current rendering lanes
+5. traverse throught the fiber tree, check the updates on hooks, run the updates that have lanes included in the rendering lanes.
+
+Thus we are able to run separately for multiple updates on single fiber.
+
+## But What's the point of Lanes? Let's look at some example.
+
+A demo explains more than a thousand words.
+
+### Demo 1. Inputs blocked by rendering long list
+
+Open [the first demo](/demos/react/lanes-priority/without-transition.html), type something in the input, you can feel the lagging, input field is not responding.
+
+![](/static/lanes-without-transition.gif)
+
+It is laggy because we enfored the delay for the rendering of each cell.
+
+```js
+function Cell() {
+  const start = Date.now();
+  while (Date.now() - start < 1) {}
+  return <span className={`cell ${COLORS[Math.round(Math.random())]}`} />;
+}
+
+function _Cells() {
+  return (
+    <div className="cells">
+      {new Array(1000).fill(0).map((_, index) => (
+        <Cell key={index} />
+      ))}
+    </div>
   );
 }
-```
-
-React has defined different event priority by event name. For mouse events, mostly they are set with
-`ContinuousEventPriority`, for `message` event it is a bit exception, it uses current scheduler priority.
-
-```js
-export function getEventPriority(domEventName: DOMEventName): * {
-  switch (domEventName) {
-    // Used by SimpleEventPlugin:
-    case "cancel":
-    case "click":
-    case "close":
-    case "contextmenu":
-    case "copy":
-    case "cut":
-    case "auxclick":
-    case "dblclick":
-    case "dragend":
-    case "dragstart":
-    case "drop":
-    case "focusin":
-    case "focusout":
-    case "input":
-    case "invalid":
-    case "keydown":
-    case "keypress":
-    case "keyup":
-    case "mousedown":
-    case "mouseup":
-    case "paste":
-    case "pause":
-    case "play":
-    case "pointercancel":
-    case "pointerdown":
-    case "pointerup":
-    case "ratechange":
-    case "reset":
-    case "resize":
-    case "seeked":
-    case "submit":
-    case "touchcancel":
-    case "touchend":
-    case "touchstart":
-    case "volumechange":
-    // Used by polyfills:
-    // eslint-disable-next-line no-fallthrough
-    case "change":
-    case "selectionchange":
-    case "textInput":
-    case "compositionstart":
-    case "compositionend":
-    case "compositionupdate":
-    // Only enableCreateEventHandleAPI:
-    // eslint-disable-next-line no-fallthrough
-    case "beforeblur":
-    case "afterblur":
-    // Not used by React but could be by user code:
-    // eslint-disable-next-line no-fallthrough
-    case "beforeinput":
-    case "blur":
-    case "fullscreenchange":
-    case "focus":
-    case "hashchange":
-    case "popstate":
-    case "select":
-    case "selectstart":
-      return DiscreteEventPriority;
-    case "drag":
-    case "dragenter":
-    case "dragexit":
-    case "dragleave":
-    case "dragover":
-    case "mousemove":
-    case "mouseout":
-    case "mouseover":
-    case "pointermove":
-    case "pointerout":
-    case "pointerover":
-    case "scroll":
-    case "toggle":
-    case "touchmove":
-    case "wheel":
-    // Not used by React but could be by user code:
-    // eslint-disable-next-line no-fallthrough
-    case "mouseenter":
-    case "mouseleave":
-    case "pointerenter":
-    case "pointerleave":
-      return ContinuousEventPriority;
-    case "message": {
-      // We might be in the Scheduler callback.
-      // Eventually this mechanism will be replaced by a check
-      // of the current priority on the native scheduler.
-      const schedulerPriority = getCurrentSchedulerPriorityLevel();
-      switch (schedulerPriority) {
-        case ImmediateSchedulerPriority:
-          return DiscreteEventPriority;
-        case UserBlockingSchedulerPriority:
-          return ContinuousEventPriority;
-        case NormalSchedulerPriority:
-        case LowSchedulerPriority:
-          // TODO: Handle LowSchedulerPriority, somehow. Maybe the same lane as hydration.
-          return DefaultEventPriority;
-        case IdleSchedulerPriority:
-          return IdleEventPriority;
-        default:
-          return DefaultEventPriority;
-      }
-    }
-    default:
-      return DefaultEventPriority;
-  }
-}
-```
-
-So what is in `dispatchContinuousEvent()`
-
-```js
-function dispatchContinuousEvent(
-  domEventName,
-  eventSystemFlags,
-  container,
-  nativeEvent
-) {
-  const previousPriority = getCurrentUpdatePriority();
-  const prevTransition = ReactCurrentBatchConfig.transition;
-  ReactCurrentBatchConfig.transition = 0;
-  try {
-    setCurrentUpdatePriority(ContinuousEventPriority);
-    dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
-    ReactCurrentBatchConfig.transition = prevTransition;
-  }
-}
-```
-
-So when a continuous event is fired, it update `currentUpdatePriority`, and set it back when dispatching is done.
-
-For details of synthetic event system, we'll do it some other day.
-
-# So let's try some example.
-
-if we are use `useState()` in a continuous event listener, what would happen?
-
-Let's dive into `useState()`. We've covered the useState in Video[TODO]
-
-if bind on `onClick`
-
-1. the event is dispatched as `DiscreteEventPriority`, which is `SyncLane`, notice `SyncLane` doesn't mean synchornous, it is just meaning it is high proirity, this is reasonable, when someone clicks, we must give the quickest response.
-
-2. during the event firing. `setState()` is called.
-
-```js
-var lane = requestUpdateLane(fiber);
-var update = {
-  lane: lane,
-  action: action,
-  hasEagerState: false,
-  eagerState: null,
-  next: null,
-};
-var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
-```
-
-3. in `requestUpdateLane()`, `getCurrentUpdatePriority()` will return SyncLane.
-4. an update with `SyncLane` will be scheduled through `scheduleUpdateOnFiber`
-
-in scheduleUpdateOnFiber()
-
-```js
-markUpdateLaneFromFiberToRoot(fiber, lane);
-ensureRootIsScheduled(root, eventTime);
-```
-
-Looks familiar to previous.
-
-well if it is continuous event, lane would be `100`.
-
-So if there are different kinds of lane waiting, then `SyncLane` will be first run.
-
-# How can we create such exmaple?
-
-It is hard for me to consider an actual example except the transition API.
-
-Since this needs to schedule a bunch of events of different levels together.
-
-Let's try manually create some cases.
-
-```js
+const Cells = React.memo(_Cells);
 function App() {
-  const [state, setState] = React.useState(0);
-  console.log("updateReducer, got", state);
+  const [text, setText] = useState("");
   return (
-    <div
-      onClick={() => {
-        setCurrentUpdatePriority(2);
-        setState("priority 2");
-        setCurrentUpdatePriority(1);
-        setState("priority 3");
-        // setCurrentUpdatePriority(1)
-        setTimeout(() => {
-          setState("priority 1");
-        }, 0);
-      }}
-    >
-      {state}
-      <A />
+    <div className="app">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+        }}
+      />
+      <Cells text={text} />
     </div>
   );
 }
 ```
+
+We can improve the case by separating the lanes for updating `<Cells>`, by using `startTransion()`, see the second demo.
+
+### Demo 2. Input not blocked by moving heavy work to transition lanes
+
+Open [the second demo](/demos/react/lanes-priority/with-transition.html) to give it a try
+
+![](/static/lanes-with-transition.gif)
+
+We can see that the input is instantly responding, while the cells are rendered later.
+
+This is because we moved the update of `<Cells/>` to transition lanes.
+
+```js
+function App() {
+  const [text, setText] = useState("");
+  const deferrredText = React.useDeferredValue(text);
+  return (
+    <div className="app">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+        }}
+      />
+    <Cells text={deferrredText} />
+    </div>
+}
+```
+
+The trick here is `useDeferredValue()`, which put updates in transition lanes. For details of this built-in method, watch my video [How does React.useDeferredValue() works?](https://www.youtube.com/watch?v=db31-3xw_3U)
+
+Also open the devtool, you can see the difference of these two.
+
+For the first one:
+
+```js
+pendingLanes 0000000000000000000000000000001
+pendingLanes 0000000000000000000000000000001
+performSyncWorkOnRoot()
+lanes to work on  0000000000000000000000000000001
+workLoopSync
+pendingLanes 0000000000000000000000000000000
+pendingLanes 0000000000000000000000000000000
+```
+
+You can see there is only one lane SyncLane, so the update for the input and the cells are processed in the same batch.
+
+While for the second demo is a bit different.
+
+```js
+pendingLanes 0000000000000000000000000000001
+pendingLanes 0000000000000000000000000000001
+performSyncWorkOnRoot()
+lanes to work on  0000000000000000000000000000001
+workLoopSync
+pendingLanes 0000000000000000000000001000000
+pendingLanes 0000000000000000000000001000000
+pendingLanes 0000000000000000000000001000000
+performConcurrentWorkOnRoot()
+pendingLanes 0000000000000000000000001000000
+```
+
+We can see there is two round, first is SyncLane for the input, but for the Cells, it is `TransitionLane1`.
+
+### Demo 3. use the internal API to schedule.
+
+My [3rd demo](/demos/react/lanes-priority/with-schedule-api.html) is also easy to understand.
+
+```js
+function App() {
+  const [state, setState] = React.useState("initial render");
+  const renders = React.useRef([]);
+  renders.current.push(state);
+  return (
+      <button
+        onClick={() => {
+          setCurrentUpdatePriority(4);
+          setState(num => num + 1);
+
+          setCurrentUpdatePriority(1);
+          setState(num => num * 10);
+        }}
+      >
+        click me
+      </button>
+      {renders.current.map((log, i) => (
+        <p key={i}>{log}</p>
+      ))}
+    </div>
+  );
+}
+```
+
+We called `seState()` twice at the same time, but each with different update priority (lane), first call is `InputContinuousLane`, the second one is `SyncLane`.
+
+So what do you expect for the result ?
+
+If we don't consider priority, we might think they are process together so `1 -> 20`.
+
+Actual result is `1 -> 10 -> 20`.
+
+Open devtool and click the button, we would see what is going on
+
+```bash
+pendingLanes 0000000000000000000000000000100
+pendingLanes 0000000000000000000000000000101
+pendingLanes 0000000000000000000000000000101
+performSyncWorkOnRoot()
+lanes to work on  0000000000000000000000000000001
+workLoopSync
+render App() with state  10
+pendingLanes 0000000000000000000000000000100
+pendingLanes 0000000000000000000000000000100
+performConcurrentWorkOnRoot()
+pendingLanes 0000000000000000000000000000100
+lanes to work on 0000000000000000000000000000100
+shouldTimeSlice false
+workLoopSync
+render App() with state  20
+pendingLanes 0000000000000000000000000000000
+pendingLanes 0000000000000000000000000000000
+```
+
+First we processed SyncLane, so `1 * 10 = 10`, then process the rest lane, notice SyncLane hook update still needs to be run for the consistency, so ` (1 + 1) * 20 = 20`.
+
+That's it for this episode, hope it helps you understand better of React internals.

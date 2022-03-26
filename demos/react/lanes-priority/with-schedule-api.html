@@ -1,0 +1,68 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style>
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+      }
+      .root {
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+    <div id="container"></div>
+    <script type="text/babel">
+      function App() {
+        const [state, setState] = React.useState(1);
+        const renders = React.useRef([]);
+        renders.current.push(state);
+
+        console.log("render App() with state ", state);
+        return (
+          <div>
+            <div>
+              we schedule work of different lane priority
+              <pre>
+                <code>
+                  {`
+setCurrentUpdatePriority(4);
+setState(num => num + 1);
+
+setCurrentUpdatePriority(1);
+setState(num => num * 10);
+`}
+                </code>
+              </pre>
+              open dev console dev and click the button below, you can see that
+              even "priority 4" is scheduled first, but "priority 1" is
+              processed first.
+            </div>
+            <hr />
+            <button
+              onClick={() => {
+                setCurrentUpdatePriority(4);
+                setState((num) => num + 1);
+
+                setCurrentUpdatePriority(1);
+                setState((num) => num * 10);
+              }}
+            >
+              click me
+            </button>
+            {renders.current.map((log, i) => (
+              <p key={i}>{log}</p>
+            ))}
+          </div>
+        );
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;
