@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "How React Scheduler works? - React Source Code Walkthrough 20"
-date: 2022-03-16 18:21:10 +0900
+date: 2022-03-26 18:21:10 +0900
 categories: React
 image: /static/21-lanes.png
 ---
