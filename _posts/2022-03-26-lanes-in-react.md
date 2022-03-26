@@ -549,7 +549,7 @@ Open [the first demo](/demos/react/lanes-priority/without-transition.html), type
 
 It is laggy because we enfored the delay for the rendering of each cell.
 
-```js
+```jsx
 function Cell() {
   const start = Date.now();
   while (Date.now() - start < 1) {}
@@ -595,7 +595,7 @@ We can see that the input is instantly responding, while the cells are rendered 
 
 This is because we moved the update of `<Cells/>` to transition lanes.
 
-```js
+```jsx
 function App() {
   const [text, setText] = useState("");
   const deferrredText = React.useDeferredValue(text);
@@ -652,7 +652,7 @@ We can see there is two round, first is SyncLane for the input, but for the Cell
 
 My [3rd demo](/demos/react/lanes-priority/with-schedule-api.html) is also easy to understand.
 
-```js
+```jsx
 function App() {
   const [state, setState] = React.useState("initial render");
   const renders = React.useRef([]);
