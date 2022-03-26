@@ -78,8 +78,7 @@ Since they are for different purposes, they are separated but have logic of mapp
 
 In my youtube video about [setState](https://www.youtube.com/watch?v=svaUEHMuv9w), we've covered that a fiber holds a linked list of hooks, and for state hook, it has a update queue which would be run during update(rerender).
 
-Here is the code where an update is created([source]9
-https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.old.js#L2175-L2183))
+Here is the code where an update is created([source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.old.js#L2175-L2183))
 
 ```js
 const lane = requestUpdateLane(fiber);
