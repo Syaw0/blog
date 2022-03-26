@@ -1,10 +1,22 @@
 ---
 layout: post
 title: "What is Lanes in React source code? - React Source Code Walkthrough 21"
-date: 2022-03-18 18:21:10 +0900
+date: 2022-03-26 18:21:10 +0900
 categories: React
 image: /static/react-scheduler.png
 ---
+
+- [Three priority systems](#three-priority-systems)
+- [What is “Lane” ?](#what-is-lane-)
+  - [Bitwise operation](#bitwise-operation)
+  - [remember childLanes ?](#remember-childlanes-)
+- [Look at performConcurrentWorkOnRoot() again](#look-at-performconcurrentworkonroot-again)
+- [updateReducer()](#updatereducer)
+- [Summary](#summary)
+- [But What’s the point of Lanes? Let’s look at some example.](#but-whats-the-point-of-lanes-lets-look-at-some-example)
+  - [Demo 1. Inputs blocked by rendering long list](#demo-1-inputs-blocked-by-rendering-long-list)
+  - [Demo 2. Input not blocked by moving heavy work to transition lanes](#demo-2-input-not-blocked-by-moving-heavy-work-to-transition-lanes)
+  - [Demo 3. use the internal API to schedule.](#demo-3-use-the-internal-api-to-schedule)
 
 Previously we've seen how React schedules tasks by their priorities, a sample task would be `performConcurrentWorkOnRoot()`, which targets the fiber tree as whole, not the level of work on a single fiber.
 
@@ -695,6 +707,6 @@ pendingLanes 0000000000000000000000000000000
 pendingLanes 0000000000000000000000000000000
 ```
 
-First we processed SyncLane, so `1 * 10 = 10`, then process the rest lane, notice SyncLane hook update still needs to be run for the consistency, so ` (1 + 1) * 20 = 20`.
+First we processed SyncLane, so `1 * 10 = 10`, then process the rest lane, notice SyncLane hook update still needs to be run for the consistency, so `(1 + 1) * 20 = 20`.
 
 That's it for this episode, hope it helps you understand better of React internals.
