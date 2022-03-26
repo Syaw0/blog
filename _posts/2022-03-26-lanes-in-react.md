@@ -3,7 +3,7 @@ layout: post
 title: "What is Lanes in React source code? - React Source Code Walkthrough 21"
 date: 2022-03-26 18:21:10 +0900
 categories: React
-image: /static/react-scheduler.png
+image: /static/21-lanes.png
 ---
 
 - [Three priority systems](#three-priority-systems)
