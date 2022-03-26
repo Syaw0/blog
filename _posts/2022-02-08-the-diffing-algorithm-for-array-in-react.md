@@ -6,6 +6,8 @@ categories: React
 image: /static/logo.png
 ---
 
+> watch my [youtube video explaining this topic](https://youtu.be/hDflM4IGCN8).
+
 When we render a list without adding `key` for each item, we woulld get a warning.
 
 ![](/static/array-diffing-1.png)
