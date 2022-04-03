@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "How Suspense works internally in Concurrent Mode 1 - Reconciling flow | React Source Code Walkthrough 23"
+title: "How Suspense works internally in Concurrent Mode 1 - Reconciling flow | React Source Code Walkthrough 22"
 date: 2022-04-02 18:21:10 +0900
 categories: React
 image: /static/reconciling-in-suspense.png
