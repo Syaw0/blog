@@ -1,0 +1,74 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style></style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const getResource = (data, delay = 1000) => ({
+        _data: null,
+        _promise: null,
+        status: "pending",
+        get data() {
+          if (this.status === "ready") {
+            return this._data;
+          } else {
+            if (this._promise == null) {
+              this._promise = new Promise((resolve) => {
+                setTimeout(() => {
+                  this._data = data;
+                  this.status = "ready";
+                  resolve();
+                }, delay);
+              });
+            }
+            console.log("throw promise");
+            throw this._promise;
+          }
+        },
+      });
+
+      function App() {
+        const [resource, setResource] = React.useState(null);
+        const [title, setTitle] = React.useState(null);
+        return (
+          <div className="app">
+            <p>
+              {" "}
+              click start &gt; then click rerender, to see the promise is thrown
+              again in console
+            </p>
+            <button
+              onClick={() => {
+                setResource(getResource("JSer", 10000));
+              }}
+            >
+              start
+            </button>
+            <button
+              onClick={() => {
+                setTitle("new title");
+              }}
+            >
+              rerender
+            </button>
+            <p>title: {title}</p>
+            <React.Suspense fallback={<p>loading...</p>}>
+              <Child resource={resource} />
+            </React.Suspense>
+          </div>
+        );
+      }
+
+      function Child({ resource }) {
+        return resource ? <p>{resource.data}</p> : null;
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;

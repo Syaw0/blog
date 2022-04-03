@@ -1,0 +1,92 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style>
+      .App {
+        font-family: sans-serif;
+        text-align: center;
+      }
+
+      .text {
+        height: 20px;
+      }
+
+      .cells {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 50px;
+      }
+
+      .cell {
+        width: 10px;
+        height: 10px;
+      }
+
+      .cell.green {
+        background-color: green;
+      }
+
+      .cell.gray {
+        background-color: #ccc;
+      }
+    </style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const COLORS = ["green", "gray"];
+      const useState = React.useState;
+
+      function Cell() {
+        const start = Date.now();
+        while (Date.now() - start < 1) {}
+        return <span className={`cell ${COLORS[Math.round(Math.random())]}`} />;
+      }
+
+      function _Cells() {
+        return (
+          <div className="cells">
+            {new Array(1000).fill(0).map((_, index) => (
+              <Cell key={index} />
+            ))}
+          </div>
+        );
+      }
+      const Cells = React.memo(_Cells);
+      function App() {
+        const [text, setText] = useState("");
+        const [textForCell, setTextForCell] = useState("");
+        const startTransition1 = React.useCallback(() => {
+          React.startTransition(() => setTextForCell("setTextForCell"));
+          React.startTransition(() => setText("text1"));
+        }, []);
+        return (
+          <div className="app">
+            demo forked from{" "}
+            <p>
+              <a href="https://codesandbox.io/s/react-concurrent-mode-demo-forked-65tu6y?file=/src/index.js">
+                here
+              </a>
+            </p>
+            <button onClick={startTransition1}>startTransition1</button>
+            <p>
+              below is huge amount of cells trying to slow down your rendering
+            </p>
+            <p>
+              but they fail to, since they are rendered in transition, low
+              priority lane
+            </p>
+            <Cells text={textForCell} />
+            <p className="text">{text}</p>
+          </div>
+        );
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;

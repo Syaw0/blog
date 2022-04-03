@@ -6,6 +6,8 @@ categories: React
 image: /static/21-lanes.png
 ---
 
+> you can watch my [youtube video for this topic](https://www.youtube.com/watch?v=yy8HRyhA_oQ)
+
 - [Three priority systems](#three-priority-systems)
 - [What is “Lane” ?](#what-is-lane-)
   - [Bitwise operation](#bitwise-operation)

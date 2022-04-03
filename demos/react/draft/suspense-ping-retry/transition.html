@@ -1,0 +1,81 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style>
+      .App {
+        font-family: sans-serif;
+        text-align: center;
+      }
+
+      .text {
+        height: 20px;
+      }
+
+      .cells {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 50px;
+      }
+
+      .cell {
+        width: 10px;
+        height: 10px;
+      }
+
+      .cell.green {
+        background-color: green;
+      }
+
+      .cell.gray {
+        background-color: #ccc;
+      }
+    </style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const resource = {
+        _name: null,
+        get name() {
+          if (this._name) {
+            return this._name;
+          } else {
+            throw new Promise((resolve) => {
+              setTimeout(() => {
+                this._name = "JSer";
+                resolve();
+              }, 3000);
+            });
+          }
+        },
+      };
+      function App() {
+        const [user, setUser] = React.useState(null);
+        const [isPending, startTransition] = React.useTransition();
+        return (
+          <div className="app">
+            <p>open dev console to see what is happening</p>
+            <button
+              onClick={() => {
+                startTransition(() => setUser(resource));
+              }}
+            >
+              {isPending ? "loading..." : "start"}
+            </button>
+            {user && <User user={user} />}
+          </div>
+        );
+      }
+
+      function User({ user }) {
+        return <p>{user.name}</p>;
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;

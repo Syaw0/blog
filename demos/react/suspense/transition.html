@@ -1,0 +1,57 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style></style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const getResource = (data, delay = 1000) => ({
+        _data: null,
+        _promise: null,
+        status: "pending",
+        get data() {
+          if (this.status === "ready") {
+            return this._data;
+          } else {
+            if (this._promise == null) {
+              this._promise = new Promise((resolve) => {
+                setTimeout(() => {
+                  this._data = data;
+                  this.status = "ready";
+                  resolve();
+                }, delay);
+              });
+            }
+            throw this._promise;
+          }
+        },
+      });
+
+      function App() {
+        const [resource, setResource] = React.useState(null);
+        return (
+          <div className="app">
+            <button
+              onClick={() => {
+                React.startTransition(() => setResource(getResource("JSer")));
+              }}
+            >
+              start
+            </button>
+            <Child resource={resource} />
+          </div>
+        );
+      }
+
+      function Child({ resource }) {
+        return resource ? <p>{resource.data}</p> : null;
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;

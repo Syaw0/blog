@@ -1,0 +1,152 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style>
+      .App {
+        font-family: sans-serif;
+        text-align: center;
+      }
+
+      .text {
+        height: 20px;
+      }
+
+      .cells {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 50px;
+      }
+
+      .cell {
+        width: 10px;
+        height: 10px;
+      }
+
+      .cell.green {
+        background-color: green;
+      }
+
+      .cell.gray {
+        background-color: #ccc;
+      }
+    </style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const { useState, Suspense, Fragment } = React;
+      function Laggy() {
+        const start = Date.now();
+        while (Date.now() - start < 10) {}
+        return null;
+      }
+
+      function LaggyList() {
+        return [...new Array(100).fill(0)].map((_, i) => {
+          return (
+            <div style={{ display: "grid" }}>
+              <Laggy key={i} />
+            </div>
+          );
+        });
+      }
+      const resource = {
+        _name: null,
+        get name() {
+          if (this._name) {
+            return this._name;
+          } else {
+            this._name = "JSer";
+            throw Promise.resolve();
+          }
+        },
+      };
+
+      const cache = new Map();
+
+      const getResource = (name, delay) => ({
+        _name: null,
+        _promise: null,
+        status: "pending",
+        get name() {
+          if (this.status === "ready") {
+            return this._name;
+          } else {
+            if (this._promise == null) {
+              this._promise = new Promise((resolve) => {
+                setTimeout(() => {
+                  this._name = name;
+                  this.status = "ready";
+                  resolve();
+                }, delay);
+              });
+            }
+            throw this._promise;
+          }
+        },
+      });
+
+      function User({ user }) {
+        return <p>{user.name}</p>;
+      }
+
+      function App() {
+        const [state1, setState1] = useState(null);
+        const [state2, setState2] = useState(null);
+        const [state3, setState3] = useState(null);
+
+        return (
+          <div className="app">
+            <button
+              onClick={() => {
+                setState1(getResource("1", 200));
+                setState2(getResource("2", 300));
+              }}
+            >
+              start
+            </button>
+            <button
+              onClick={() => {
+                setState3("3");
+              }}
+            >
+              setState3
+            </button>
+            {state3}
+            <Suspense fallback={<div>loading...</div>}>
+              {state1 && (
+                <Fragment>
+                  <User user={state1} />
+                </Fragment>
+              )}
+              <Suspense fallback={<div>loading more...</div>}>
+                {state2 && <User user={state2} />}
+              </Suspense>
+            </Suspense>
+          </div>
+        );
+      }
+
+      function Toggle() {
+        const [state, setState] = React.useState(true);
+        return (
+          <input
+            type="checkbox"
+            checked={state}
+            onChange={() => setState((_) => !_)}
+          />
+        );
+      }
+
+      function User({ user }) {
+        return <p>{user.name}</p>;
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;
