@@ -19,8 +19,8 @@ In this episode, let's take a deeper look at how Offscreen component works.
   - [How Offscreen rendering is done?](#how-offscreen-rendering-is-done)
   - [How is it rendered but hidden from DOM?](#how-is-it-hidden-from-dom)
   - [How Offscreen Component handles hidden => visible?](#how-offscreen-component-handles-hidden--visible)
-  - [Offscreen Component decides to hide/unhide in commit phase](#offscreen-component-decides-to-hideunhide-in-commit-phase)
-  - [Summary](#summary)
+- [Offscreen Component decides to hide/unhide in commit phase](#offscreen-component-decides-to-hideunhide-in-commit-phase)
+- [Summary](#summary)
 
 ## Demo
 
