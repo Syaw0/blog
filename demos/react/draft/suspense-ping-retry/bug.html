@@ -1,0 +1,96 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style>
+      .App {
+        font-family: sans-serif;
+        text-align: center;
+      }
+
+      .text {
+        height: 20px;
+      }
+
+      .cells {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 50px;
+      }
+
+      .cell {
+        width: 10px;
+        height: 10px;
+      }
+
+      .cell.green {
+        background-color: green;
+      }
+
+      .cell.gray {
+        background-color: #ccc;
+      }
+    </style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const { useState, Suspense, Fragment } = React;
+      const getResource = (name, delay) => ({
+        _name: null,
+        _promise: null,
+        status: "pending",
+        get name() {
+          if (this.status === "ready") {
+            return this._name;
+          } else {
+            if (this._promise == null) {
+              this._promise = new Promise((resolve) => {
+                setTimeout(() => {
+                  this._name = name;
+                  this.status = "ready";
+                  resolve();
+                }, delay);
+              });
+            }
+            throw this._promise;
+          }
+        },
+      });
+
+      function User({ user }) {
+        return <p>{user.name}</p>;
+      }
+
+      function App() {
+        const [user1, setUser1] = useState(null);
+        const [user2, setUser2] = useState(null);
+
+        return (
+          <div className="app">
+            <p>the nested Suspense are throttled in React 18 alpha</p>
+            <button
+              onClick={() => {
+                setUser1(getResource("user1", 200));
+                setUser2(getResource("user2", 300));
+              }}
+            >
+              start
+            </button>
+            <Suspense fallback={<div>loading user 1</div>}>
+              {user1 && <User user={user1} />}
+              <Suspense fallback={<div>loading user 2</div>}>
+                {user2 && <User user={user2} />}
+              </Suspense>
+            </Suspense>
+          </div>
+        );
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;

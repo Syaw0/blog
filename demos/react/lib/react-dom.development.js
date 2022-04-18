@@ -6161,10 +6161,10 @@
       case OffscreenLane:
         return OffscreenLane;
 
-      default:
+      default: // This shouldn't be reachable, but as a fallback, return the entire bitmask.
         {
           error("Should have found matching lanes. This is a bug in React.");
-        } // This shouldn't be reachable, but as a fallback, return the entire bitmask.
+        }
 
         return lanes;
     }
@@ -30553,7 +30553,6 @@
 
     while (parent !== null) {
       parent.childLanes = mergeLanes(parent.childLanes, lane);
-      console.log("set childLanes to ", parent.childLanes, " for ", parent);
       alternate = parent.alternate;
 
       if (alternate !== null) {

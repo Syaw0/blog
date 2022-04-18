@@ -1,0 +1,53 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <div id="container"></div>
+    <script type="text/babel">
+      const Offscreen = React.unstable_Offscreen;
+
+      function Component({ onClick }) {
+        const [count, setCount] = React.useState(0);
+        console.log("visible, render Component:", count);
+        return (
+          <div>
+            <button
+              onClick={() => {
+                setCount((_) => _ + 1);
+                onClick();
+              }}
+            >
+              schedule work and hide the offscreen component
+            </button>
+            <p>{count}</p>
+          </div>
+        );
+      }
+
+      function App() {
+        const [hidden, setHidden] = React.useState(false);
+
+        console.log("render App");
+        return (
+          <div>
+            <button onClick={() => setHidden((_) => !_)}>
+              toggle offscreen component
+            </button>
+            <Offscreen mode={hidden ? "hidden" : "visible"}>
+              <Component
+                onClick={() => {
+                  setHidden(true);
+                }}
+              />
+            </Offscreen>
+          </div>
+        );
+      }
+
+      const rootElement = document.getElementById("container");
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;

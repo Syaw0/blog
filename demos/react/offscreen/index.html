@@ -1,0 +1,41 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <div id="container"></div>
+    <script type="text/babel">
+      const Offscreen = React.unstable_Offscreen;
+
+      function Component() {
+        const [count, setCount] = React.useState(0);
+        console.log("render Component: count => ", count);
+        React.useLayoutEffect(() => {
+          console.log("render Component: layout effect in Component");
+        }, []);
+        React.useEffect(() => {
+          console.log("render Component: effect in Component");
+          setCount((_) => _ + 1);
+        }, []);
+        return <p>{count}</p>;
+      }
+
+      function App() {
+        const [hidden, setHidden] = React.useState(true);
+        console.log("render App");
+        return (
+          <div>
+            <button onClick={() => setHidden((_) => !_)}>toggle</button>
+            <Offscreen mode={hidden ? "hidden" : "visible"}>
+              <Component />
+            </Offscreen>
+          </div>
+        );
+      }
+
+      const rootElement = document.getElementById("container");
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;
