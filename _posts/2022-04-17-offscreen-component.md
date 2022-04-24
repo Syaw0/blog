@@ -288,14 +288,14 @@ Open the demo and console, you can see that if we click the 2nd button,
 4. `subtreeRenderLanes is set to 1000000000000000000000000000001` => it combines the first SyncLane which is skipped
 5. `enough priority` => when render our `<Componenent>`, it has enough priority because it is scheduled on SyncLane, it needs to be on SyncLane.
 
-Phew, this is a log. Let's go back to how OffscreenLane is scheduled.
+Phew, this is a lot. Let's go back to how OffscreenLane is scheduled.
 
 ```js
 // Schedule this fiber to re-render at offscreen priority. Then bailout.
 workInProgress.lanes = workInProgress.childLanes = laneToLanes(OffscreenLane);
 ```
 
-This line is important, it set `lanes` to mark that this Offscreen component needs to be re-renderd. Recall we've covered this in [How does React bailout work in reconciliation]{% post_url 2022-01-08-how-does-bailout-work %}).
+This line is important, it set `lanes` to mark that this Offscreen component needs to be re-renderd. Recall we've covered this in [How does React bailout work in reconciliation]({% post_url 2022-01-08-how-does-bailout-work %}).
 
 There was `markUpdateLaneFromFiberToRoot()` which helps update the `childLanes` straight to root, but there is no such call here, it is handled by some other logic. Let's continue.
 
