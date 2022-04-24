@@ -15,7 +15,7 @@ In this episode, let's take a deeper look at how Offscreen component works.
 - [Demo](#demo)
 - [Data type for OffscreenComponent](#data-type-for-offscreencomponent)
 - [Reconciling Offscreen Component](#reconciling-offscreen-component)
-  - [How Offscreen rendering is scheduled](#how-offscreen-rendering-is-scheduled)
+  - [How Offscreen rendering is scheduled](#how-offscreen-rendering-is-scheduled-)
   - [How Offscreen rendering is done?](#how-offscreen-rendering-is-done)
   - [How is it rendered but hidden from DOM?](#how-is-it-rendered-but-hidden-from-dom)
   - [How Offscreen Component handles hidden => visible?](#how-offscreen-component-handles-hidden--visible)
