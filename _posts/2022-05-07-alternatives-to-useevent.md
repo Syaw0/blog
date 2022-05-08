@@ -12,6 +12,10 @@ So `useEvent()` is going to be the recommended way of creating event callbacks w
 
 In this post I'll try to solve the problem naively with existing concepts and see how far we can go.
 
+- [1. What is the problem we are solving?](#1-what-is-the-problem-we-are-solving)
+- [2. How to solve it with ref?](#2-how-to-solve-it-with-ref)
+- [3. Wait, isn't it the same as useEvent()?](#3-wait-isnt-it-the-same-as-useevent)
+
 ## 1. What is the problem we are solving?
 
 Here is the basic example to illustrate what the problem is.
@@ -139,7 +143,7 @@ const send = React.useCallback(() => {
 
 Now it looks much better, and extra one dependency `getData()` is more aligned with my understanding of React for now.
 
-## 3. Wait, isn't it the same as `useEvent()`?
+## 3. Wait, isn't it the same as useEvent()?
 
 Maybe yes, currently `useRefData()` has almost the same conceptual implementation compared to `useEvent()`.
 This is actually interesting, because we can think of `useRefData()` is a way to stablize some data through ref,
