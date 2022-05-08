@@ -3,7 +3,7 @@ layout: post
 title: "An alternative(?) to React.useEvent() "
 date: 2022-05-07 18:21:10 +0900
 categories: React
-image: /static/useEvent.png
+image: /static/useEvent-alternative.png
 ---
 
 Recently there is a hot discussion of [React RFC: useEvent()](https://github.com/reactjs/rfcs/pull/220), if you haven't read it I strongly suggest you spend some time on it.
