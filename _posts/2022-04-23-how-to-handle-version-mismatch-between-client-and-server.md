@@ -2,7 +2,7 @@
 layout: post
 title: "How to handle version mismatch between client and server?"
 date: 2022-04-22 18:21:10 +0900
-categories: React
+categories: Front-End
 image: /static/version-mismatch.png
 ---
 
