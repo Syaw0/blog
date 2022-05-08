@@ -92,7 +92,7 @@ const send = React.useCallback(() => {
 
 Why `useLayoutEffect()` is used is because setting ref in rendering is not safe in concurrent mode and it is run ealier than `useEffect()`.
 
-Above code is working and works fine, but it becomes ugly if there is multiple `textRef`.
+Above code works fine, but it becomes ugly if there are multiple `textRef`.
 
 We can put the logic into a separate reusable hook, like below
 
@@ -116,7 +116,7 @@ const send = React.useCallback(() => {
 }, []);
 ```
 
-This looks better, but still not elegant, what if `useRefData()` supports multiple arguments?
+This looks better, but still not elegant, what about enabling `useRefData()` to support multiple arguments?
 
 ```js
 function useRefData(...args) {
