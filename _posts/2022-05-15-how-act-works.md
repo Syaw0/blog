@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "How does act() work in React? | React Source Code Walkthrough 24"
-date: 2022-05-07 18:21:10 +0900
+date: 2022-05-15 18:21:10 +0900
 categories: React
 image: /static/act.png
 ---
