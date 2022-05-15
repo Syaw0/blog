@@ -51,7 +51,7 @@ effect
 
 You can [try it out here](/demos/react/act/without-act.html).
 
-Now let's wrap the rendering into act, [try it out]()
+Now let's wrap the rendering into act, [try it out](/demos/react/act/with-act.html)
 
 ```jsx
 function App() {
