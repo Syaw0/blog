@@ -64,8 +64,8 @@ console.log("after render");
 Now the order changes, effects are flushed synchrously.
 
 ```
-after render
 effect
+after render
 ```
 
 This would be useful during test, since the asynchrous behavior is inside of the blackbox of React,
