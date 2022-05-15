@@ -12,6 +12,12 @@ Since we have already covered a few topics of React internals, it would be inter
 
 We are going to look at `act()` today.
 
+- [1. demo of act()](#1-demo-of-act)
+- [2. how does act() work?](#2-how-does-act-work)
+- [3. how callback is scheduled in the act queue ?](#3-how-callback-is-scheduled-in-the-act-queue-)
+- [4. How act queue is exported ?](#4-how-act-queue-is-exported-)
+- [5. Summary](#5-summary)
+
 ## 1. demo of act()
 
 According to [official document](https://reactjs.org/docs/testing-recipes.html#act),
