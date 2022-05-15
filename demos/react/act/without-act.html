@@ -1,0 +1,25 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <div id="container"></div>
+    <script type="text/babel">
+      const { useEffect, useState, useLayoutEffect } = React;
+
+      function App() {
+        useEffect(() => {
+          console.log("effect");
+        });
+
+        return null;
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("container"));
+      root.render(<App />);
+      console.log("after render");
+      // React.unstable_act(() => root.render(<App/>))
+    </script>
+  </body>
+</html>
+;
