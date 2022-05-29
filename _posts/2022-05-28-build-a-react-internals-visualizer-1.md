@@ -20,7 +20,7 @@ I want to build a visualizer that **automatically illustrate how React works int
 
 Isn't it super useful to have something like this?
 
-# What would it consists of?
+# What would it consist of?
 
 ### 1. Inspector
 
@@ -356,7 +356,7 @@ function Renderer({ shapes }) {
 }
 ```
 
-And now we can get something like below.
+The whole commit could be found [here](https://github.com/JSerZANP/react-internals-visualizer/commit/5f5533ead72de238988f19c36512cb37402d423e#diff-dfb07ec1b2270ab54cda71ee7b25d36428cf7300ddd1a4d4498c8bf812160e86R33031-R33034), And now we can get something like below.
 
 ![](/static/riv-ep1-outcome.jpeg).
 
