@@ -47,7 +47,7 @@ We need to detect 2 things
 1. when a fiber node is created
 2. when a fiber node is updated.
 
-Thus we can defined the message protocol like
+Thus we can define the message protocol like
 
 ```ts
 type Fiber = {
@@ -78,7 +78,7 @@ type MessageUpdateFiber = {
 In order for us to be able to reconstruct the tree structure after receiving the messages,
 we need to give the fiber node a unique id., which works like the identifier.
 
-Ok, there is `createFiber()` in react-dom which creates fiber per its name, we returna proxy which enables us to send a message when properties on fiber is updated.
+Ok, there is `createFiber()` in react-dom which creates fiber per its name, we return a proxy which enables us to send a message when properties on fiber is updated.
 
 ```diff
 var createFiber = function (tag, pendingProps, key, mode) {
