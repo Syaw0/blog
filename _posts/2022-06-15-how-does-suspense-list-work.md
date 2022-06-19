@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "How does SuspenseList work in React? | React Source Code Walkthrough 25"
-date: 2022-06-15 18:21:10 +0900
+date: 2022-06-19 18:21:10 +0900
 categories: React
 image: /static/25-SuspenseList.png
 ---
