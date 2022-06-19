@@ -1,0 +1,70 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style></style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const getResource = (data, delay = 1000) => ({
+        _data: null,
+        _promise: null,
+        status: "pending",
+        get data() {
+          if (this.status === "ready") {
+            return this._data;
+          } else {
+            if (this._promise == null) {
+              this._promise = new Promise((resolve) => {
+                setTimeout(() => {
+                  this._data = data;
+                  this.status = "ready";
+                  resolve();
+                }, delay);
+              });
+            }
+            throw this._promise;
+          }
+        },
+      });
+
+      function App() {
+        const [resource1, setResource1] = React.useState(null);
+        const [resource2, setResource2] = React.useState(null);
+        const [resource3, setResource3] = React.useState(null);
+
+        return (
+          <div className="app">
+            <button
+              onClick={() => {
+                setResource1(getResource("JSer1", 2000));
+                setResource2(getResource("JSer2", 1000));
+                setResource3(getResource("JSer3", 3000));
+              }}
+            >
+              start
+            </button>
+            <React.Suspense fallback={<p>loading...</p>}>
+              <Child resource={resource1} />
+            </React.Suspense>
+            <React.Suspense fallback={<p>loading...</p>}>
+              <Child resource={resource2} />
+            </React.Suspense>
+            <React.Suspense fallback={<p>loading...</p>}>
+              <Child resource={resource3} />
+            </React.Suspense>
+          </div>
+        );
+      }
+
+      function Child({ resource }) {
+        return resource ? <p>{resource.data}</p> : null;
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;

@@ -23257,6 +23257,18 @@
       }
 
       case HostComponent: {
+        console.log("completeWork HostComponent", workInProgress);
+        if (workInProgress.elementType === "p") {
+          let sibling = workInProgress.sibling;
+          Object.defineProperty(workInProgress, "sibling", {
+            get() {
+              return sibling;
+            },
+            set(value) {
+              sibling = value;
+            },
+          });
+        }
         popHostContext(workInProgress);
         var rootContainerInstance = getRootHostContainer();
         var type = workInProgress.type;
@@ -23385,6 +23397,7 @@
       }
 
       case SuspenseComponent: {
+        console.log("completeWork SuspenseComponent", workInProgress);
         popSuspenseContext(workInProgress);
         var nextState = workInProgress.memoizedState;
 
@@ -23433,7 +23446,6 @@
                   }
                 }
               }
-
               return null;
             } else {
               // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
@@ -23468,7 +23480,6 @@
                   }
                 }
               }
-
               return null;
             }
           } // Successfully completed this tree. If this was a forced client render,
@@ -23486,7 +23497,7 @@
           if ((workInProgress.mode & ProfileMode) !== NoMode) {
             transferActualDuration(workInProgress);
           } // Don't bubble properties in this case.
-
+          console.log("return itself");
           return workInProgress;
         }
 
@@ -23604,7 +23615,6 @@
             }
           }
         }
-
         return null;
       }
 
@@ -23640,6 +23650,7 @@
       }
 
       case SuspenseListComponent: {
+        console.log("completeWork SuspenseListComponent", workInProgress);
         popSuspenseContext(workInProgress);
         var renderState = workInProgress.memoizedState;
 
@@ -23652,8 +23663,10 @@
 
         var didSuspendAlready = (workInProgress.flags & DidCapture) !== NoFlags;
         var renderedTail = renderState.rendering;
-
+        console.log("didSuspendAlready", didSuspendAlready);
+        console.log("renderState.rendering", renderState.rendering);
         if (renderedTail === null) {
+          console.log("renderedTail === null");
           // We just rendered the head.
           if (!didSuspendAlready) {
             // This is the first pass. We need to figure out if anything is still
@@ -23668,16 +23681,18 @@
             var cannotBeSuspended =
               renderHasNotSuspendedYet() &&
               (current === null || (current.flags & DidCapture) === NoFlags);
-
+            console.log("cannotBeSuspended ? ", cannotBeSuspended);
             if (!cannotBeSuspended) {
               var row = workInProgress.child;
 
               while (row !== null) {
                 var suspended = findFirstSuspended(row);
-
+                console.log("findFirstSuspended in", row, suspended);
                 if (suspended !== null) {
+                  console.log("set didSuspendAlready to true");
                   didSuspendAlready = true;
                   workInProgress.flags |= DidCapture;
+                  console.log("set didcapture", workInProgress);
                   cutOffTailIfNeeded(renderState, false); // If this is a newly suspended tree, it might not get committed as
                   // part of the second pass. In that case nothing will subscribe to
                   // its thenables. Instead, we'll transfer its thenables to the
@@ -23702,7 +23717,9 @@
                   // Reset the child fibers to their original state.
 
                   workInProgress.subtreeFlags = NoFlags;
-                  resetChildFibers(workInProgress, renderLanes); // Set up the Suspense Context to force suspense and immediately
+                  console.log("resetChildFibers");
+                  resetChildFibers(workInProgress, renderLanes);
+                  console.log("push ForceSuspenseFallback in completeWork"); // Set up the Suspense Context to force suspense and immediately
                   // rerender the children.
 
                   pushSuspenseContext(
@@ -23712,7 +23729,7 @@
                       ForceSuspenseFallback
                     )
                   ); // Don't bubble properties in this case.
-
+                  console.log("returns child", workInProgress.child);
                   return workInProgress.child;
                 }
 
@@ -23741,15 +23758,17 @@
             cutOffTailIfNeeded(renderState, false);
           } // Next we're going to render the tail.
         } else {
+          console.log("renderedTail !== null");
           // Append the rendered row to the child list.
           if (!didSuspendAlready) {
             var _suspended = findFirstSuspended(renderedTail);
-
+            console.log("findFirstSuspended in", renderedTail.key, _suspended);
             if (_suspended !== null) {
               workInProgress.flags |= DidCapture;
+              console.log("set didSuspendAlready to true");
               didSuspendAlready = true; // Ensure we transfer the update queue to the parent so that it doesn't
               // get lost if this row ends up dropped during a second pass.
-
+              console.log("transfer thenables");
               var _newThenables = _suspended.updateQueue;
 
               if (_newThenables !== null) {
@@ -23815,21 +23834,26 @@
             renderState.last = renderedTail;
           }
         }
-
+        console.log("renderState.tail", renderState.tail);
         if (renderState.tail !== null) {
           // We still have tail rows to render.
           // Pop a row.
           var next = renderState.tail;
           renderState.rendering = next;
+          console.log("set renderState.rendering to ", next);
           renderState.tail = next.sibling;
+          console.log("update renderState.tail from", next, "to", next.sibling);
           renderState.renderingStartTime = now();
-          next.sibling = null; // Restore the context.
+          next.sibling = null;
+          console.log("detatch sibling from", next);
+          // Restore the context.
           // TODO: We can probably just avoid popping it instead and only
           // setting it the first time we go from not suspended to suspended.
 
           var suspenseContext = suspenseStackCursor.current;
-
+          console.log("didSuspendAlready", didSuspendAlready);
           if (didSuspendAlready) {
+            console.log("push ForceSuspenseFallback in completeWork()");
             suspenseContext = setShallowSuspenseContext(
               suspenseContext,
               ForceSuspenseFallback
@@ -23841,6 +23865,7 @@
           pushSuspenseContext(workInProgress, suspenseContext); // Do a pass over the next row.
           // Don't bubble properties in this case.
 
+          console.log("return next", next);
           return next;
         }
 
@@ -25628,6 +25653,14 @@
     var suspenseContext = suspenseStackCursor.current;
     var showFallback = false;
     var didSuspend = (workInProgress.flags & DidCapture) !== NoFlags;
+    console.log(
+      "Update Suspense",
+      workInProgress,
+      "didSuspende",
+      didSuspend,
+      "shouldRemainOnFallback",
+      shouldRemainOnFallback(suspenseContext, current)
+    );
 
     if (didSuspend || shouldRemainOnFallback(suspenseContext, current)) {
       // Something in this boundary's subtree already suspended. Switch to
@@ -26406,13 +26439,13 @@
   }
 
   function findLastContentRow(firstChild) {
-    // This is going to find the last row among these children that is already
     // showing content on the screen, as opposed to being in fallback state or
     // new. If a row has multiple Suspense boundaries, any of them being in the
     // fallback state, counts as the whole row being in a fallback state.
     // Note that the "rows" will be workInProgress, but any nested children
     // will still be current since we haven't rendered them yet. The mounted
     // order may not be the same as the new order. We use the new order.
+
     var row = firstChild;
     var lastContentRow = null;
 
@@ -26425,7 +26458,7 @@
 
       row = row.sibling;
     }
-
+    console.log("find last content row", lastContentRow);
     return lastContentRow;
   }
 
@@ -26633,6 +26666,14 @@
       suspenseContext,
       ForceSuspenseFallback
     );
+    console.log(
+      "updateSuspenseListComponent shouldForceFallbac",
+      shouldForceFallback
+    );
+    console.log(
+      "updateSuspenseListComponent DidCapture",
+      workInProgress.flags & DidCapture
+    );
 
     if (shouldForceFallback) {
       suspenseContext = setShallowSuspenseContext(
@@ -26668,14 +26709,25 @@
       switch (revealOrder) {
         case "forwards": {
           var lastContentRow = findLastContentRow(workInProgress.child);
+          console.log("lastContentRow", lastContentRow);
           var tail;
 
           if (lastContentRow === null) {
+            console.log(
+              "the whole list ist part of the tail, set tail to the first child",
+              workInProgress.child
+            );
+            console.log("reset child to null");
             // The whole list is part of the tail.
             // TODO: We could fast path by just rendering the tail now.
             tail = workInProgress.child;
             workInProgress.child = null;
           } else {
+            console.log(
+              "set tail to the the next sibling",
+              lastContentRow.sibling
+            );
+            console.log("disconnect the sibling from lastContentRow");
             // Disconnect the tail rows after the content row.
             // We're going to render them separately later.
             tail = lastContentRow.sibling;
@@ -26748,6 +26800,10 @@
       }
     }
 
+    console.log(
+      "done updating SuspenseList, go to child",
+      workInProgress.child
+    );
     return workInProgress.child;
   }
 
@@ -29294,6 +29350,7 @@
   }
 
   function attachSuspenseRetryListeners(finishedWork) {
+    console.log("attachSuspenseRetryListeners", finishedWork);
     // If this boundary just timed out, then it will have a set of wakeables.
     // For each wakeable, attach a listener so that when it resolves, React
     // attempts to re-render the boundary in the primary (pre-timeout) state.
@@ -29661,10 +29718,7 @@
       case SuspenseListComponent: {
         recursivelyTraverseMutationEffects(root, finishedWork);
         commitReconciliationEffects(finishedWork);
-        console.log(
-          "commitMutationEffectOnFiber SuspenseListComponent",
-          finishedWork
-        );
+
         if (flags & Update) {
           attachSuspenseRetryListeners(finishedWork);
         }
@@ -32138,7 +32192,7 @@
       }
 
       var siblingFiber = completedWork.sibling;
-
+      console.log("check sibling", siblingFiber);
       if (siblingFiber !== null) {
         // If there is more work to do in this returnFiber, do that next.
         workInProgress = siblingFiber;
@@ -32156,6 +32210,7 @@
   }
 
   function commitRoot(root, recoverableErrors, transitions) {
+    console.log("commitRoot");
     // TODO: This no longer makes any sense. We already wrap the mutation and
     // layout phases. Should be able to remove.
     var previousUpdateLanePriority = getCurrentUpdatePriority();
