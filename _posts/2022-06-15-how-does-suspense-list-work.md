@@ -6,6 +6,20 @@ categories: React
 image: /static/25-SuspenseList.png
 ---
 
+- [1.Demo time - What is SuspenseList?](#1-demo-time---what-is-suspenselist)
+- [2. How does SuspenseList work?](#2-how-does-suspenselist-work)
+  - [2.1 how to check and pass information from siblings ?](#21-how-to-check-and-pass-information-from-siblings-)
+  - [2.2 shouldRemainOnFallback()](#22-shouldremainonfallback)
+  - [2.3 SuspenseContext and ReactFiberStack](#23-suspensecontext-and-reactfiberstack)
+  - [2.4 when are pushSuspenseContext() called](#24-when-are-pushsuspensecontext-called)
+  - [2.5 SuspenseContext in updateSuspenseComponent()](#25-suspensecontext-in-updatesuspensecomponent)
+  - [2.6 How to do two passes?](#26-how-to-do-two-passes)
+  - [2.7 Let’s review the traverse algorithm again](#27-lets-review-the-traverse-algorithm-again)
+  - [2.8 SuspenseContext in updateSuspenseListComponent()](#28-suspensecontext-in-updatesuspenselistcomponent)
+  - [2.9 Magic lies in completeWork()](#29-magic-lies-in-completework)
+  - [2.10 Summary](#210-summary)
+  - [2.11 Illustration](#211-illustration)
+
 # 1. Demo time - What is SuspenseList?
 
 Suspense itself will show fallbacks when not ready and reveal the contents when promises resolve, problem is that if there are multiple Suspense components, it could lead to flickering because of the order is not assured, that's why we need sorta coordinating.
