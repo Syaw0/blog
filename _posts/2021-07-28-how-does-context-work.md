@@ -190,7 +190,7 @@ We can see that in `pushProvider()`:
 1. current value is stored in the fiber stack
 2. new value is set to the context
 
-For cases like multiple provider on the same context, this makes sure that for a fiber node, the closes value is set when used.
+For cases like multiple provider on the same context, this makes sure that for a fiber node, the closest value is set when used.
 
 Pay attention that the fiber stack is storing the **previous value** while context itself is set to the newest value, this is because context has default values.
 
@@ -198,7 +198,7 @@ Pay attention that the fiber stack is storing the **previous value** while conte
 
 Where there is push, there is pop, called in [completeWork](https://github.com/facebook/react/blob/49f8254d6dec7c6de789116e20ffc5a9401aa725/packages/react-reconciler/src/ReactFiberCompleteWork.new.js#L1259-L1264).
 
-This is to make sure that the context is relecting the right value while the fiber tree is traversed by `workInProgress`.
+This is to make sure that the context is relecting the right value while the fiber tree is traversed by `workInProgress`. Think about an element as a sibling to a Provider, when React goes to this fiber, it should NOT have any information of its sibling Privider, so need to pop.
 
 ```js
 export function popProvider(
