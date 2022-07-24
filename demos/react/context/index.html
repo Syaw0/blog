@@ -1,0 +1,31 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <div id="container"></div>
+    <script type="text/babel">
+      const Context = React.createContext("123");
+
+      function Component1() {
+        return <Component2 />;
+      }
+
+      function Component2() {
+        return <Context.Consumer>{(value) => value}</Context.Consumer>;
+      }
+
+      function App() {
+        return (
+          <Context.Provider value="JSer">
+            <Component1 />
+          </Context.Provider>
+        );
+      }
+
+      const rootElement = document.getElementById("container");
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;
