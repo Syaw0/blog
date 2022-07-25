@@ -14,7 +14,7 @@ So I am asked to implement Tab component in React, I thought it was easy but act
 
 Well, here is my first try, just define types for the tabs and get them rendered.
 
-```ts
+```tsx
 const tabs: Tab[] = [
   {
     label: "tab 1",
@@ -118,7 +118,7 @@ Perfect, below is the code
 
 You can find [the full code here](https://stackblitz.com/edit/react-ts-2bfx2c?file=App.tsx).
 
-```ts
+```tsx
 const TabsContext = React.createContext<{
   selectedTab: string | null;
   selectTab: (tab: string) => void;
