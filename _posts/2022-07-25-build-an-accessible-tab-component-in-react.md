@@ -68,7 +68,7 @@ function Tabs({
 }
 ```
 
-## Problem above approach
+## Problems in above approach
 
 1. Not flexible enough, too strong assumptions about the data structure and html structure. We must pass in the data and contents through `Tab[]` and we are not easily to change html structure. Suppose we want to add a title in one Tab, and add some extra controls in another Tab, it won't go well
 
