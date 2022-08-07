@@ -3,7 +3,7 @@ layout: post
 title: "Try to build types in TypeScript, not write them"
 date: 2022-08-06 18:21:10 +0900
 categories: TypeScript
-image: /static/a11y-tab.png
+image: /static/build-types.png
 ---
 
 > You can watch my [Youtube video explanation](https://www.youtube.com/watch?v=AmzfAih2CEk) for this post.
