@@ -59,6 +59,8 @@ Take a look at `AClass.ts`, the value of `"a"` is used here, but defined in `pro
 
 If we look at the steps we took in above example, we can find that the typing for `Prop` is merely extracting some information from existing code, we are not adding types for some unknow data sources, the manual process could easily be replaced by build scripts.
 
+The same idea could be found in [Relay Compiler](https://relay.dev/docs/guides/compiler/), which removes us from manually hoisting the data fetching.
+
 ```ts
 // buildTypes.ts
 
@@ -110,8 +112,8 @@ The above script is pretty straightforward, it fetchs all the classes and genera
 export type { Prop } from "./built-types";
 ```
 
-What this means is that we only need to care about the classes, not the types any more. This makes thing easier and more scalable.
+What this means is that we only need to care about the classes, not the types any more. Anytime we have changes, we just run above script and done. This makes thing easier and more scalable.
 
-Fun part is that there is a uniqueness check in above script, I bet you can do much fancier stuff with it. But it is a nice example to see how powerful scripts can be comparing to the default capabilities from TypeScript.
+Fun part is that there is a uniqueness check in above script, I bet you can do much fancier stuff with it. This shows how powerful scripts can be comparing to the default capabilities from TypeScript.
 
-Also above is just some hacky examples, you might want to try AST parsing and accomplish it in a more robust way.
+Also above is just some hacky example, you might want to try AST parsing and accomplish it in a more robust way.
