@@ -1,0 +1,80 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style>
+      .modal {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        place-content: center;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-inner {
+        background-color: #fff;
+        padding: 10px;
+        min-width: 400px;
+      }
+    </style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const {
+        useLayoutEffect,
+        useState,
+        createContext,
+        useContext,
+        useCallback,
+      } = React;
+      const { createPortal } = ReactDOM;
+
+      const SomeContext = createContext("default value");
+
+      function Modal({ children }) {
+        const el = document.createElement("div");
+        el.className = "modal";
+        useLayoutEffect(() => {
+          document.body.append(el);
+          return () => {
+            el.remove();
+          };
+        });
+        return createPortal(<div className="modal-inner">{children}</div>, el);
+      }
+
+      function AModal({ hideModal }) {
+        return (
+          <Modal>
+            <div>
+              <p>Hello Modal</p>
+              <p>
+                context:{" "}
+                <SomeContext.Consumer>{(val) => val}</SomeContext.Consumer>
+              </p>
+              <button onClick={hideModal}>hide modal</button>
+            </div>
+          </Modal>
+        );
+      }
+
+      function App() {
+        const [showModal, setShowModal] = useState(false);
+        const hideModal = useCallback(() => setShowModal(false), []);
+        return (
+          <SomeContext.Provider value="value from provider">
+            <button onClick={() => setShowModal(true)}>show modal</button>
+            {showModal && <AModal hideModal={hideModal} />}
+          </SomeContext.Provider>
+        );
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;

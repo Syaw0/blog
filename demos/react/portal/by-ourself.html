@@ -1,0 +1,82 @@
+<html>
+  <body>
+    <script src="./react.development.js"></script>
+    <script src="./react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <style>
+      .modal {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        place-content: center;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-inner {
+        background-color: #fff;
+        padding: 10px;
+        min-width: 400px;
+      }
+    </style>
+    <div id="container"></div>
+    <script type="text/babel">
+      const { useLayoutEffect, useState } = React;
+      const { createPortal } = ReactDOM;
+
+      function Portal({ children, container }) {
+        // render the children in a differnet dom
+        useLayoutEffect(() => {
+          const root = ReactDOM.createRoot(container);
+          root.render(children);
+          return () => {
+            root.unmount(container);
+          };
+        }, [children]);
+
+        return null;
+      }
+
+      function Modal({ children }) {
+        const el = document.createElement("div");
+        el.className = "modal";
+        useLayoutEffect(() => {
+          document.body.append(el);
+          return () => {
+            el.remove();
+          };
+        });
+        return (
+          <Portal container={el}>
+            <div className="modal-inner">{children}</div>
+          </Portal>
+        );
+      }
+
+      function App() {
+        const [showModal, setShowModal] = useState(false);
+        return (
+          <div>
+            <button onClick={() => setShowModal(true)}>show modal</button>
+            {showModal && (
+              <Modal>
+                <div>
+                  <p>Hello Modal</p>
+                  <button onClick={() => setShowModal(false)}>
+                    hide modal
+                  </button>
+                </div>
+              </Modal>
+            )}
+          </div>
+        );
+      }
+
+      const rootElement = document.getElementById("container");
+
+      ReactDOM.createRoot(rootElement).render(<App />);
+    </script>
+  </body>
+</html>
+;
