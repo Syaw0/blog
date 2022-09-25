@@ -90,7 +90,7 @@ But with the Portal we built, this doesn't work, here is [the demeo](/demos/reac
 Recall in [Initial Mount, how does it work?](https://www.youtube.com/watch?v=EakHciGG3SM), that the syncing from React fiber to real DOM is roughly like this.
 
 1. reconcile -> detect if any fiber changed, if so mark them with flags, like add/removal .etc
-   1.1. complete -> create DOM elements for the fibers or reuse them if already exist
+   - 1.1. complete -> create DOM elements for the fibers or reuse them if already exist
 2. commit -> for each fiber with those flags, update the DOM accordingly.
 
 One important property on fiber node is `stateNode` which holds the reference to the real DOM (for intrinsic element).
@@ -125,7 +125,7 @@ DOM(stateNode):   . > div >   .    >
 
 Because of the nature of reconciling, the DOM structure is opaque to React runtime, thus for Portal it could only focus on how to manage the container in the commit phase, everything would work just the same.
 
-### 1. createPortal returns special element.
+### 1. createPortal() returns special element.
 
 ```js
 export function createPortal(
