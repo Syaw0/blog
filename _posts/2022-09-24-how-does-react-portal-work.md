@@ -100,7 +100,7 @@ What Portal is special is that only where the DOM is is different, for example i
 ```
 fiber:         Parent > div > Modal > div
 
-DOM(stateNode):     . > div > . > div
+DOM(stateNode):     . > div >    .  > div
 ```
 
 we can see the stateNode has the real structure in DOM world, but with Portal things should be different.
@@ -108,9 +108,9 @@ we can see the stateNode has the real structure in DOM world, but with Portal th
 ```
 fiber:        Parent > div > Modal > Portal > div
 
-DOM(stateNode):   . > div >   . >
+DOM(stateNode):   . > div >   .   >
 
-                                             > div
+                                           > div
 ```
 
 What Portal does internally actually is let Portal holds itself a stateNode of the target container element.
@@ -118,9 +118,9 @@ What Portal does internally actually is let Portal holds itself a stateNode of t
 ```
 fiber:        Parent > div > Modal > Portal > div
 
-DOM(stateNode):   . > div >   . >
+DOM(stateNode):   . > div >   .    >
 
-                                       contain? > div
+                                  container? > div
 ```
 
 Because of the nature of reconciling, the DOM structure is opaque to React runtime, thus for Portal it could only focus on how to manage the container in the commit phase, everything would work just the same.
