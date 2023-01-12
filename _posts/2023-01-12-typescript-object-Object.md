@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "{} vs object vs Object in Typescript."
+title: "`{}` vs `object` vs `Object` in Typescript."
 date: 2023-01-12 11:21:10 +0900
 categories: TypeScript
 image: /static/ts-obj.png
