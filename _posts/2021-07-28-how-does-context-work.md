@@ -198,7 +198,7 @@ Pay attention that the fiber stack is storing the **previous value** while conte
 
 Where there is push, there is pop, called in [completeWork](https://github.com/facebook/react/blob/49f8254d6dec7c6de789116e20ffc5a9401aa725/packages/react-reconciler/src/ReactFiberCompleteWork.new.js#L1259-L1264).
 
-This is to make sure that the context is relecting the right value while the fiber tree is traversed by `workInProgress`. Think about an element as a sibling to a Provider, when React goes to this fiber, it should NOT have any information of its sibling Privider, so need to pop.
+This is to make sure that the context is relecting the right value while the fiber tree is traversed by `workInProgress`. Think about an element as a sibling to a Provider, when React goes to this fiber, it should NOT have any information of its sibling Provider, so need to pop.
 
 ```js
 export function popProvider(
