@@ -23,7 +23,7 @@ image: /static/react-scheduler.png
 
 ## 1. To Begin With
 
-Let's start with following piece of code([source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberWorkLoop.old.js#L1743)), we've already covered this part in [our very first episode of this series](https://www.youtube.com/watch?v=OcB3rTln-fI&list=PLvx8w9g4qv_p-OS-XdbB3Ux_6DMXhAJC3&index=1).
+Let's start with following piece of code([source](https://github.com/facebook/react/blob/555ece0cd14779abd5a1fc50f71625f9ada42bef/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2119)), we've already covered this part in [our very first episode of this series](https://www.youtube.com/watch?v=OcB3rTln-fI&list=PLvx8w9g4qv_p-OS-XdbB3Ux_6DMXhAJC3&index=1).
 
 ```js
 function workLoopSync() {
@@ -37,7 +37,7 @@ In a word, React internally works on each fiber on the fiber tree, `workInProgre
 
 `workLoopSync()` is very easy to understand, since it is `sync`, there is no interrupting of our work, so React just keep working in a while loop.
 
-Things are different in concurrent mode.([source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberWorkLoop.old.js#L1831))
+Things are different in concurrent mode.([source](https://github.com/facebook/react/blob/555ece0cd14779abd5a1fc50f71625f9ada42bef/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2296))
 
 ```js
 function workLoopConcurrent() {
@@ -124,7 +124,7 @@ Now, let's take a look at how `workLoopConcurrent` is called.
 
 ![](/static/callstack-workloopconcurrent.png)
 
-All the code is in [ReactFiberWorkLoop.old.js](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberWorkLoop.old.js), let's break it down.
+All the code is in [ReactFiberWorkLoop.js](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberWorkLoop.js), let's break it down.
 
 We've met `ensureRootIsScheduled()` a lot of times, it is used from quite a few place, as the name implies, `ensureRootIsScheduled()` schedules a task for React to do the updates if there are any.
 
@@ -138,7 +138,7 @@ We'll dive into the scheduler soon, but for now, just keep in mind that Schedule
 
 See that performConcurrentWorkOnRoot() returns differently based on the progress?
 
-If `shouldYield()` is true, workLoopConcurrent will break, which results in incomplete update(RootInComplete), performConcurrentWorkOnRoot() will return `performConcurrentWorkOnRoot.bind(null, root)`. ([code](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberWorkLoop.old.js#L1011))
+If `shouldYield()` is true, workLoopConcurrent will break, which results in incomplete update(RootInComplete), performConcurrentWorkOnRoot() will return `performConcurrentWorkOnRoot.bind(null, root)`. ([code](https://github.com/facebook/react/blob/555ece0cd14779abd5a1fc50f71625f9ada42bef/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1167))
 
 If it is complete, then it returns null.
 
@@ -383,7 +383,7 @@ const continuationCallback = callback(didUserCallbackTimeout);
 
 It is called with a flag to indicate if it is expired or not.
 
-`performConcurrentWorkOnRoot()` will fall back on sync mode if timeout ([code](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberWorkLoop.old.js#L920-L932))
+`performConcurrentWorkOnRoot()` will fall back on sync mode if timeout ([code](https://github.com/facebook/react/blob/555ece0cd14779abd5a1fc50f71625f9ada42bef/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1053-1059))
 
 ```js
 const shouldTimeSlice =
@@ -420,7 +420,7 @@ This is for delayed tasks, we'll come back later.
 
 ### 4.5 how `shouldYield()` work?
 
-[source](https://github.com/facebook/react/blob/main/packages/scheduler/src/forks/Scheduler.js#L440)
+[source](https://github.com/facebook/react/blob/555ece0cd14779abd5a1fc50f71625f9ada42bef/packages/scheduler/src/forks/Scheduler.js#L487)
 
 ```js
 function shouldYieldToHost() {
